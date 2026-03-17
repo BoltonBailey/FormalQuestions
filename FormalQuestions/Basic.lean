@@ -44,26 +44,7 @@ def e : ℕ → ℕ → ℚ
 
 /--
 For a deck with n red cards > m black cards, the expected payoff is at least n - m.
-Proof by induction.
 -/
-theorem e_pos_of_diff (n m : ℕ) (hn : n > m) : e n m ≥ n - m := by
-  sorry
-
-/--
-For one deck with n red cards and m black cards, and another deck with m red cards and n black cards,
-the total expected payoff is positive.
--/
-theorem pos_e_swap_add (n m : ℕ) (hn : 0 < n + m) : 0 < e n m + e m n := by
-  sorry
-
-/--
-For a deck with a positive equal amount fo cards of each color, the expected payoff is positive.
--/
-theorem e_pos_of_pos (n : ℕ) (hn : 0 < n) : 0 < e n n := by
-  sorry
-
-
-/-- **Question** would like to prove that given r > 137, and b > r + 137 √ r, then e(r, b) = 0.
--/
-theorem question (r b : ℕ) (hr : r > 137) (hb : b > r + 137 * Nat.sqrt r) : e r b = 0 := by
+theorem e_pos_of_diff (n m : ℕ) : e n m ≥ n - m := by
+  -- Proof by induction on n+m
   sorry
