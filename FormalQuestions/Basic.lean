@@ -43,7 +43,7 @@ def e : ℕ → ℕ → ℚ
 
 
 /--
-For a deck with n red cards > m black cards, the expected payoff is at least n - m.
+For a deck with n red cards and m black cards, the expected payoff is at least n - m.
 -/
 theorem e_pos_of_diff (n m : ℕ) : e n m ≥ n - m := by
   -- Proof by induction on n+m
