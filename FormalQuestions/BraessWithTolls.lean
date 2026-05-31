@@ -1,23 +1,6 @@
 
 import Mathlib
 
-/-!
-
-We take the setting of braess paradox with the four node, five road network, where the roads have their usual dependencies on congestion
-From this, let's take the following five-plus-infinity-player game. Each of the first five players represents a toll company controlling one road. They will choose a toll for their road and be paid off according to how many drivers use their road times the toll they charge. We denominate the toll in minutes, and assume that the rest of the player are drivers who choose a route, and their payoff negative of total toll plus their travel time.
-
-**Question**s
-
-* Can we formalize some version of this game as a usual game in the "Game theory" sense?
-  * Where the concept of "infinite drivers" makes sense, presumably as some kind of limit?
-  * Perhaps we can just compute how the drivers should behave directly from the tolls, and make this a simple five player game?
-* Even if not, can we still formalize "Nash Equilibrium" for this ~game based on strategy profiles which tell us the toll actions and the proportions of drivers on each route.
-* What are the Nash Equilibria for this game?
-* Are there multiple? Are there any?
-* What is the analogue of PoA?
-
--/
-
 
 /-- A strategy profile for the Braess-with-tolls game.
 
@@ -131,7 +114,14 @@ def InterchangeTollPayoff (p : BraessGameProfile) : ℝ :=
 * for the drivers: every route used by a positive proportion of drivers achieves the maximum
   driver payoff (so no individual driver can strictly improve by switching routes); and
 * for each of the five toll companies: no other choice of toll (with everything else fixed)
-  yields a strictly higher payoff. -/
+  yields a strictly higher payoff.
+
+TODO unfortunately, this is not what we want,
+because if the toll companies can increase toll without drivers responding,
+then they will always have incentive to do so.
+
+We need some kind of equilibrium for the drivers themselves.
+-/
 def isNashEquilibrium (p : BraessGameProfile) : Prop :=
   p.valid ∧
   (0 < p.NorthRouteDriverProportion →
@@ -181,5 +171,11 @@ def NashEquilibriumExists : ∃ p : BraessGameProfile, p.isNashEquilibrium :=
 def UniqueNashEquilibrium : ∃! p : BraessGameProfile, p.isNashEquilibrium :=
   by
   sorry
+
+/--
+Is the set of possible total tolls paid by drivers in Nash equilibria bounded?
+-/
+def NashEquilibriumTollBounded : Prop :=
+  ∃ M : ℝ, ∀ p : BraessGameProfile, p.isNashEquilibrium → p.NWToll + p.NEToll + p.SWToll + p.SEToll + p.InterchangeToll ≤ M
 
 end BraessGameProfile
