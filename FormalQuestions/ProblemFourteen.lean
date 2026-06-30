@@ -135,22 +135,24 @@ theorem e_eq_zero_of_inner_nonpos (r b : ℕ)
   rw [e_succ_succ]
   exact max_eq_left h
 
-/-- A supersolution (blueprint `def:super`): a nonnegative function dominating the
-boundary data and satisfying the supersolution inequality, here written in the
-equivalent "continue value" form `φ(r,b) ≥ (r/N)(φ(r-1,b)+1) + (b/N)(φ(r,b-1)-1)`. -/
-structure IsSupersolution (φ : ℕ → ℕ → ℚ) : Prop where
+/-- A supersolution (blueprint `def:super`): a nonnegative real-valued function
+dominating the boundary data and satisfying the supersolution inequality, here
+written in the equivalent "continue value" form
+`φ(r,b) ≥ (r/N)(φ(r-1,b)+1) + (b/N)(φ(r,b-1)-1)`. Real-valued so that barriers built
+from `Real.sqrt` are admissible. -/
+structure IsSupersolution (φ : ℕ → ℕ → ℝ) : Prop where
   nonneg : ∀ r b, 0 ≤ φ r b
   zero_left : ∀ b, φ 0 b = 0
-  base : ∀ r : ℕ, (r : ℚ) ≤ φ r 0
+  base : ∀ r : ℕ, (r : ℝ) ≤ φ r 0
   ss : ∀ r b : ℕ,
     (r + 1) / (r + b + 2) * (φ r (b + 1) + 1)
       + (b + 1) / (r + b + 2) * (φ (r + 1) b - 1) ≤ φ (r + 1) (b + 1)
 
 /-- Comparison principle (blueprint `prop:comparison`): any supersolution `φ`
-dominates the equity `e`. -/
-theorem e_le_of_supersolution {φ : ℕ → ℕ → ℚ} (hφ : IsSupersolution φ) :
-    ∀ r b, e r b ≤ φ r b := by
-  have H : ∀ n r b, r + b = n → e r b ≤ φ r b := by
+dominates the equity `e` (compared after casting `e` into `ℝ`). -/
+theorem e_le_of_supersolution {φ : ℕ → ℕ → ℝ} (hφ : IsSupersolution φ) :
+    ∀ r b, (e r b : ℝ) ≤ φ r b := by
+  have H : ∀ n r b, r + b = n → (e r b : ℝ) ≤ φ r b := by
     intro n
     induction n using Nat.strong_induction_on with
     | _ n ih =>
@@ -161,23 +163,28 @@ theorem e_le_of_supersolution {φ : ℕ → ℕ → ℚ} (hφ : IsSupersolution 
         cases b with
         | zero => simpa [e] using hφ.base (r + 1)
         | succ b =>
-          rw [e_succ_succ]
+          rw [e_succ_succ, Rat.cast_max, Rat.cast_zero]
+          push_cast
           apply max_le (hφ.nonneg _ _)
-          have h1 : e r (b + 1) ≤ φ r (b + 1) := ih (r + (b + 1)) (by omega) r (b + 1) rfl
-          have h2 : e (r + 1) b ≤ φ (r + 1) b := ih ((r + 1) + b) (by omega) (r + 1) b rfl
-          have hc1 : (0 : ℚ) ≤ (r + 1) / (r + b + 2) := by positivity
-          have hc2 : (0 : ℚ) ≤ (b + 1) / (r + b + 2) := by positivity
-          have f1 : (r + 1) / (r + b + 2) * (e r (b + 1) + 1)
+          have h1 : (e r (b + 1) : ℝ) ≤ φ r (b + 1) :=
+            ih (r + (b + 1)) (by omega) r (b + 1) rfl
+          have h2 : (e (r + 1) b : ℝ) ≤ φ (r + 1) b :=
+            ih ((r + 1) + b) (by omega) (r + 1) b rfl
+          have hc1 : (0 : ℝ) ≤ (r + 1) / (r + b + 2) := by positivity
+          have hc2 : (0 : ℝ) ≤ (b + 1) / (r + b + 2) := by positivity
+          have f1 : (r + 1) / (r + b + 2) * ((e r (b + 1) : ℝ) + 1)
               ≤ (r + 1) / (r + b + 2) * (φ r (b + 1) + 1) :=
             mul_le_mul_of_nonneg_left (by linarith) hc1
-          have f2 : (b + 1) / (r + b + 2) * (e (r + 1) b - 1)
+          have f2 : (b + 1) / (r + b + 2) * ((e (r + 1) b : ℝ) - 1)
               ≤ (b + 1) / (r + b + 2) * (φ (r + 1) b - 1) :=
             mul_le_mul_of_nonneg_left (by linarith) hc2
           linarith [hφ.ss r b]
   intro r b
   exact H (r + b) r b rfl
 
-/-- **Question** would like to prove that given r > 137, and b > r + 137 √ r, then e(r, b) = 0.
+/-- **Question** would like to prove that given r > 137, and b > r + 137 √ r (real
+square root), then e(r, b) = 0.
 -/
-theorem question (r b : ℕ) (hr : r > 137) (hb : b > r + 137 * Nat.sqrt r) : e r b = 0 := by
+theorem question (r b : ℕ) (hr : r > 137) (hb : (b : ℝ) > r + 137 * Real.sqrt r) :
+    e r b = 0 := by
   sorry

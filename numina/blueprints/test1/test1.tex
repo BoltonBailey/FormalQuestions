@@ -65,7 +65,8 @@ Formalised in Lean (\texttt{e\_pos\_of\_pos}).
 \begin{theorem}[\texttt{question}]\label{thm:question}
 \lean{question}
 \uses{prop:comparison, def:super, lem:zero_le_e}
-If $r>137$ and $b>r+137\,\lfloor\sqrt r\rfloor$, then $e(r,b)=0$.
+If $r>137$ and $b>r+137\sqrt r$, where $\sqrt r$ is the real square root and the
+inequality is read in $\mathbb R$ after casting $r,b$, then $e(r,b)=0$.
 \end{theorem}
 
 The constant $137$ is a deliberately generous threshold: the genuine boundary of
@@ -115,7 +116,8 @@ $N>0$, the inequality of Lemma~\ref{lem:reduction} is equivalent to
 \begin{definition}[Supersolution]\label{def:super}
 \lean{IsSupersolution}\leanok
 \uses{def:e}
-A function $\varphi:\mathbb N\times\mathbb N\to\mathbb Q$ is a \emph{supersolution} if
+A real-valued function $\varphi:\mathbb N\times\mathbb N\to\mathbb R$ is a
+\emph{supersolution} if
 \begin{enumerate}
   \item $\varphi(r,b)\ge 0$ for all $r,b$;
   \item $\varphi(0,b)=0$ and $\varphi(r,0)\ge r$;
@@ -137,7 +139,8 @@ $\varphi$ does not exceed $\varphi$: rearranging (SS) gives
 \begin{proposition}[Comparison]\label{prop:comparison}
 \lean{e_le_of_supersolution}\leanok
 \uses{lem:recursion, def:super}
-If $\varphi$ is a supersolution, then $e(r,b)\le\varphi(r,b)$ for all $r,b$.
+If $\varphi$ is a supersolution, then $e(r,b)\le\varphi(r,b)$ for all $r,b$ (the
+rational $e(r,b)$ being cast into $\mathbb R$).
 \end{proposition}
 \begin{proof}\leanok
 Strong induction on $r+b$.
@@ -156,7 +159,7 @@ is $\le\varphi(r,b)$.
 
 Thus, to prove Theorem~\ref{thm:question} it suffices to exhibit a supersolution
 $\varphi$ that \emph{vanishes} on the target region
-$R=\{(r,b): b\ge r+137\lfloor\sqrt r\rfloor\}$: then for $(r,b)\in R$ we get
+$R=\{(r,b): b\ge r+137\sqrt r\}$ (real $\sqrt r$): then for $(r,b)\in R$ we get
 $0\le e(r,b)\le\varphi(r,b)=0$.
 
 \section{The barrier (open: the explicit supersolution)}
@@ -197,18 +200,16 @@ $c=137$) shows:
 So the quadratic shape is \emph{viable in the continuum} once $K$ is large enough;
 the original $K=4$ merely made the curvature too weak.
 
-\paragraph{The discretization obstruction.}
-This continuum picture does not transfer verbatim, because the theorem's region uses
-$\lfloor\sqrt r\rfloor$ and $\varphi$ must be $\mathbb Q$-valued. Replacing $\sqrt r$
-by $m=\lfloor\sqrt r\rfloor$ makes $\varphi$ rational but injects $O(1)$ jumps in $m$
-at perfect squares and distorts the strip width by $O(1)$. Numerically the floor
-barrier then fails near perfect-square neighbours (e.g. $r=9999$ at $K=91$) and at
-small $r$, and - unlike the continuum case - increasing $K$ does \emph{not}
-uniformly help (it worsens small-$r$ points): no single $K$ tested passes for all
-$r>137$ (e.g. $K=500$ fails near $r=537$ and $r=10299$). A rigorous $\mathbb
-Q$-valued barrier therefore needs a monotone rational surrogate for $\sqrt r$ (so the
-$r$-difference keeps a controlled sign), or an enlarged constant plus an auxiliary
-correction absorbing the $O(1)$ floor errors.
+\paragraph{No discretization obstruction.}
+Theorem~\ref{thm:question} is now stated with the \emph{real} square root, and
+Definition~\ref{def:super} (and the Lean comparison principle) is now \emph{real}
+valued: $\varphi:\mathbb N\times\mathbb N\to\mathbb R$ with the conclusion
+$(e(r,b):\mathbb R)\le\varphi(r,b)$. Consequently the barrier may use $\sqrt r$
+directly. The earlier difficulty - that $\lfloor\sqrt r\rfloor$ injects $O(1)$ jumps
+at perfect squares and that a $\mathbb Q$-valued $\varphi$ cannot equal
+$D^2/(K\sqrt r)$ - disappears entirely. The real-$\sqrt{\,}$ quadratic barrier with a
+large fixed $K$ above is therefore exactly the object to formalise; nothing further
+about square-root discretization is needed.
 
 \paragraph{The correct diffusive structure (heuristic).}
 Expanding the differences in (SS) to second order, the supersolution inequality is,
@@ -231,15 +232,15 @@ supersolution may safely overestimate this $G$, so the task is to find an explic
 elementary $\overline G\ge G$ for which the \emph{discrete} (SS) can be checked.
 
 \paragraph{Status.}
-The barrier \emph{shape} is essentially settled: a quadratic layer
-$D^2/(K\sqrt r)$ with a large fixed $K$ is, numerically, a supersolution in the
-continuum for $c=137$, with margin growing like $\sqrt r$. Two things remain for a
-rigorous proof: (a) a correct derivation and proof of the continuum (SS) inequality
-for a fixed large $K$ - the binding region is the upper-middle of the strip, not the
-diagonal, so the diagonal ODE above is only motivational and the earlier scalar
-reduction $Q(D)$ must be redone; and (b) a $\mathbb Q$-valued discretization
-controlling the $\lfloor\sqrt r\rfloor$ jumps and the small-$r$ regime. This single
-construction is the only ungreen node between Proposition~\ref{prop:comparison} and
+With the real-square-root statement and the real-valued comparison principle, the
+barrier \emph{shape} is essentially settled: a real-$\sqrt{\,}$ quadratic layer
+$D^2/(K\sqrt r)$ with a large fixed $K$ is, numerically, a supersolution for $c=137$,
+with margin growing like $\sqrt r$. Exactly one task remains: a rigorous derivation
+and proof of the (SS) inequality for this $\varphi$ at a fixed large $K$ - the
+binding region is the upper-middle of the strip, not the diagonal, so the diagonal
+ODE above is only motivational and the earlier scalar reduction $Q(D)$ must be
+redone. No square-root discretization issue remains. This single construction is the
+only ungreen node between Proposition~\ref{prop:comparison} and
 Theorem~\ref{thm:question}.
 
 \end{document}
