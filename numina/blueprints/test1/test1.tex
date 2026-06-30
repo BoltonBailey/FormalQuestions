@@ -282,10 +282,28 @@ $r\to\infty$), and is now \emph{partially formalised}. It is split by region:
   exactly to $\sqrt r\le\sqrt{r+1}$ - the $137^2/91$ and $N$ factors all cancel.
   \item \texttt{phiBar\_ss\_hard} (the layer $r\le b$ together with the diagonal
   seam $b=r-1$): the one remaining \texttt{sorry}. This is the asymptotically tight
-  core (margin $\to0^+$), needing the exact $\sqrt r$ versus $\sqrt{r+1}$ algebra
-  (via $\sqrt{r+1}^{\,2}=\sqrt r^{\,2}+1$) and the scalar inequality $P\ge0$.
+  core (margin $\to0^+$).
 \end{itemize}
 Discharging \texttt{phiBar\_ss\_hard} is the only ungreen node between
 Proposition~\ref{prop:comparison} and Theorem~\ref{thm:question}.
+
+\paragraph{The reduced tight inequality.}
+In the main layer sub-case (all three barrier values in the middle branch), put
+$s=\sqrt r$, $t=\sqrt{r+1}$ (so $s^2=r$, $t^2=s^2+1$, $1\le s\le t$). With layer
+membership $D_0=s^2+137s-(b+1)>0$, $D_1=s^2+137t-b>0$, $b\ge s^2+1$, clearing the
+positive denominators $91\,s\,t\,N$ reduces (SS) to the polynomial inequality
+\[
+  (s^2+1)\big(t\,D_0^2+91st\big)+(b+1)\big(s\,(D_1+1)^2-91st\big)
+  \ \le\ D_1^2\,s\,(s^2+b+2).
+\]
+This has been checked true (e.g.\ at $r=10^4$, $b=17000$ the gap is
+$\approx3.7\times10^{10}$ on terms of size $\approx10^{14}$, a relative margin
+$\approx3\times10^{-4}$), and its leading content is exactly $P\ge0$ with minimiser
+$x_*=(c+K)/3=76$, suggesting the square $(s^2+61t-b)^2$ (since $137-76=61$). It is a
+\emph{degree-7} Positivstellensatz problem in $s,t,b$ with the single constraint
+$t^2=s^2+1$, and is asymptotically tight. \texttt{nlinarith} does not find a
+certificate (a single SOS hint is insufficient; a broad hint set times out), so the
+remaining work is a hand-built or solver-generated SOS certificate, or a structural
+(convexity) argument replacing the brute-force clearing.
 
 \end{document}
