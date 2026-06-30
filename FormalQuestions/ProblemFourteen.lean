@@ -235,7 +235,9 @@ theorem phiBar_ss_bulk (r b : ℕ) (hbulk : (b : ℝ) + 1 < r) :
     apply phiBar_bulk
     · refine not_le.mpr ?_; push_cast; nlinarith [Real.sqrt_nonneg ((r : ℝ) + 1)]
     · refine not_le.mpr ?_; push_cast; linarith
-  rw [hC, hA, hB, div_mul_eq_mul_div, div_mul_eq_mul_div, div_add_div_same, div_le_iff hN]
+  rw [hC, hA, hB]
+  simp only [div_mul_eq_mul_div]
+  rw [← add_div, div_le_iff₀ hN]
   push_cast
   nlinarith [mul_nonneg (mul_nonneg hQ (by positivity : (0 : ℝ) ≤ (r : ℝ) + 1))
       (by linarith [hs] : (0 : ℝ) ≤ Real.sqrt ((r : ℝ) + 1) - Real.sqrt r),
