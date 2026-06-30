@@ -253,8 +253,8 @@ theorem phiBar_ss_far (r b : ℕ)
   have hN : (0 : ℝ) < (r : ℝ) + b + 2 := by positivity
   have hs01 : Real.sqrt (r : ℝ) ≤ Real.sqrt ((r : ℝ) + 1) := Real.sqrt_le_sqrt (by linarith)
   have ht1 : (1 : ℝ) ≤ Real.sqrt ((r : ℝ) + 1) := by
-    rw [show (1 : ℝ) = Real.sqrt 1 from Real.sqrt_one.symm]
-    exact Real.sqrt_le_sqrt (by linarith [Nat.cast_nonneg (α := ℝ) r])
+    have h := Real.sqrt_le_sqrt (show (1 : ℝ) ≤ (r : ℝ) + 1 by linarith [Nat.cast_nonneg (α := ℝ) r])
+    rwa [Real.sqrt_one] at h
   have htsq : Real.sqrt ((r : ℝ) + 1) ^ 2 = (r : ℝ) + 1 :=
     Real.sq_sqrt (by linarith [Nat.cast_nonneg (α := ℝ) r])
   have hfar' := hfar
@@ -274,8 +274,20 @@ theorem phiBar_ss_far (r b : ℕ)
         have := not_le.mp hBfar; push_cast at this; linarith
       rw [hBval]; push_cast
       rw [← mul_div_assoc, div_le_iff₀ (by positivity : (0 : ℝ) < 91 * Real.sqrt ((r : ℝ) + 1))]
-      nlinarith [htsq, ht1, hfar', hD0, sq_nonneg (Real.sqrt ((r : ℝ) + 1) - 1),
-        mul_pos hD0 hD0, mul_nonneg (le_of_lt hD0) (sub_nonneg.mpr ht1)]
+      have hd1 : ↑r + 1 + 137 * Real.sqrt ((r : ℝ) + 1) - ↑b ≤ 1 := by linarith [hfar']
+      have hdsq : (↑r + 1 + 137 * Real.sqrt ((r : ℝ) + 1) - ↑b) ^ 2 ≤ 1 := by
+        nlinarith [hD0, hd1]
+      have hb1 : (0 : ℝ) ≤ (b : ℝ) + 1 := by positivity
+      have hstep1 : ((b : ℝ) + 1) * (↑r + 1 + 137 * Real.sqrt ((r : ℝ) + 1) - ↑b) ^ 2 ≤ (b : ℝ) + 1 := by
+        nlinarith [mul_nonneg hb1 (by linarith [hdsq] :
+          (0 : ℝ) ≤ 1 - (↑r + 1 + 137 * Real.sqrt ((r : ℝ) + 1) - ↑b) ^ 2)]
+      have hbr2 : (137 : ℝ) * Real.sqrt ((r : ℝ) + 1) ≤ ↑b - ↑r := by linarith [hd1]
+      have hfin : (b : ℝ) + 1 ≤ (↑b - ↑r) * (91 * Real.sqrt ((r : ℝ) + 1)) := by
+        nlinarith [htsq, ht1, hD0, hbr2,
+          mul_nonneg (sub_nonneg.mpr hbr2) (by positivity : (0 : ℝ) ≤ 91 * Real.sqrt ((r : ℝ) + 1)),
+          mul_nonneg (by linarith [ht1] : (0 : ℝ) ≤ 12466 * Real.sqrt ((r : ℝ) + 1) - 137)
+            (le_trans zero_le_one ht1)]
+      linarith [hstep1, hfin]
   rw [hC, hA]
   simp only [div_mul_eq_mul_div, zero_add]
   rw [← add_div, div_le_iff₀ hN]

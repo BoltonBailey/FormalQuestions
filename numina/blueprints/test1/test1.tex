@@ -270,16 +270,22 @@ and a fixed $K$ in the window $[36.7,511.3]$ (we take $K=91$), formalised in Lea
 \texttt{phiBar} with the supersolution claim \texttt{phiBar\_isSupersolution}. Its
 structural conditions (nonnegativity, boundary data) are proved.
 
-The \texttt{ss} field (the supersolution inequality) has been \emph{verified
-numerically to hold for all $r,b\ge0$}: the exact divided-form defect is positive
-everywhere, with worst value $\approx0.45$ at small $r$ decreasing like
-$\approx21/\sqrt r$ as $r\to\infty$. So \texttt{phiBar\_isSupersolution} is a true
-statement; it is not yet \emph{proved}. The difficulty is precisely that the margin
-$\to0^+$: the inequality is asymptotically tight, so loose bounds do not suffice and a
-correct proof must track the exact $\sqrt r$ versus $\sqrt{r\pm1}$ algebra (via
-$\sqrt{r+1}^{\,2}=\sqrt r^{\,2}+1$) together with the region casework (layer, bulk,
-far field, diagonal seam, top boundary) and the finite low-$r$ range. Discharging
-this single \texttt{sorry} is the only ungreen node between
+The \texttt{ss} field (the supersolution inequality, \texttt{phiBar\_ss}) has been
+\emph{verified numerically to hold for all $r,b\ge0$} (the exact divided-form defect
+is positive everywhere, worst $\approx0.45$ at small $r$ and $\approx21/\sqrt r$ as
+$r\to\infty$), and is now \emph{partially formalised}. It is split by region:
+\begin{itemize}
+  \item \texttt{phiBar\_ss\_far} (far field, the point is in the vanishing region
+  $D_1\le0$): \textbf{proved}. The left side is $\le0$; reduces to sign facts and a
+  loose bound using $\sqrt r\le\sqrt{r+1}$ and $\sqrt{r+1}\ge1$.
+  \item \texttt{phiBar\_ss\_bulk} (bulk, $b+1<r$): \textbf{proved}. Collapses
+  exactly to $\sqrt r\le\sqrt{r+1}$ - the $137^2/91$ and $N$ factors all cancel.
+  \item \texttt{phiBar\_ss\_hard} (the layer $r\le b$ together with the diagonal
+  seam $b=r-1$): the one remaining \texttt{sorry}. This is the asymptotically tight
+  core (margin $\to0^+$), needing the exact $\sqrt r$ versus $\sqrt{r+1}$ algebra
+  (via $\sqrt{r+1}^{\,2}=\sqrt r^{\,2}+1$) and the scalar inequality $P\ge0$.
+\end{itemize}
+Discharging \texttt{phiBar\_ss\_hard} is the only ungreen node between
 Proposition~\ref{prop:comparison} and Theorem~\ref{thm:question}.
 
 \end{document}
