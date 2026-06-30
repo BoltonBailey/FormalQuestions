@@ -63,7 +63,7 @@ Formalised in Lean (\texttt{e\_pos\_of\_pos}).
 \section{Goal}
 
 \begin{theorem}[\texttt{question}]\label{thm:question}
-\lean{question}
+\lean{question}\leanok
 \uses{prop:comparison, def:super, lem:zero_le_e}
 If $r>137$ and $b>r+137\sqrt r$, where $\sqrt r$ is the real square root and the
 inequality is read in $\mathbb R$ after casting $r,b$, then $e(r,b)=0$.
@@ -162,7 +162,7 @@ $\varphi$ that \emph{vanishes} on the target region
 $R=\{(r,b): b\ge r+137\sqrt r\}$ (real $\sqrt r$): then for $(r,b)\in R$ we get
 $0\le e(r,b)\le\varphi(r,b)=0$.
 
-\section{The barrier (open: the explicit supersolution)}
+\section{The barrier (the explicit supersolution)}
 
 \paragraph{Why a $\sqrt r$ layer.}
 Two observations constrain the shape of $\varphi$. First, $r-b$ satisfies (SS) with
@@ -263,47 +263,44 @@ $O(1)$ number, far below $137$ (the slack the problem statement exploits). A
 supersolution may safely overestimate this $G$, so the task is to find an explicit
 elementary $\overline G\ge G$ for which the \emph{discrete} (SS) can be checked.
 
-\paragraph{Status.}
+\paragraph{Status: complete.}
 With the real-square-root statement and the real-valued comparison principle, the
 barrier is the real-$\sqrt{\,}$ quadratic layer $\varphi=D^2/(K\sqrt r)$ with $c=137$
-and a fixed $K$ in the window $[36.7,511.3]$ (we take $K=91$), formalised in Lean as
-\texttt{phiBar} with the supersolution claim \texttt{phiBar\_isSupersolution}. Its
-structural conditions (nonnegativity, boundary data) are proved.
-
-The \texttt{ss} field (the supersolution inequality, \texttt{phiBar\_ss}) has been
-\emph{verified numerically to hold for all $r,b\ge0$} (the exact divided-form defect
-is positive everywhere, worst $\approx0.45$ at small $r$ and $\approx21/\sqrt r$ as
-$r\to\infty$), and is now \emph{partially formalised}. It is split by region:
+and $K=91$ (in the admissible window $[36.7,511.3]$), formalised in Lean as
+\texttt{phiBar}, and the supersolution claim \texttt{phiBar\_isSupersolution} is now
+\textbf{fully proved}. Hence \texttt{question} (Theorem~\ref{thm:question}) is proved
+with no \texttt{sorry}: the whole chain \texttt{phiBar} $\to$
+\texttt{phiBar\_isSupersolution} $\to$ \texttt{e\_le\_of\_supersolution} $\to$
+\texttt{question} compiles. The supersolution inequality \texttt{phiBar\_ss} is split
+by region, all three cases proved:
 \begin{itemize}
-  \item \texttt{phiBar\_ss\_far} (far field, the point is in the vanishing region
-  $D_1\le0$): \textbf{proved}. The left side is $\le0$; reduces to sign facts and a
-  loose bound using $\sqrt r\le\sqrt{r+1}$ and $\sqrt{r+1}\ge1$.
-  \item \texttt{phiBar\_ss\_bulk} (bulk, $b+1<r$): \textbf{proved}. Collapses
-  exactly to $\sqrt r\le\sqrt{r+1}$ - the $137^2/91$ and $N$ factors all cancel.
-  \item \texttt{phiBar\_ss\_hard} (the layer $r\le b$ together with the diagonal
-  seam $b=r-1$): the one remaining \texttt{sorry}. This is the asymptotically tight
-  core (margin $\to0^+$).
+  \item \texttt{phiBar\_ss\_far} (far field $D_1\le0$): the left side is $\le0$;
+  sign facts plus a loose bound from $\sqrt r\le\sqrt{r+1}$, $\sqrt{r+1}\ge1$.
+  \item \texttt{phiBar\_ss\_bulk} ($b+1<r$): collapses exactly to
+  $\sqrt r\le\sqrt{r+1}$ - the $137^2/91$ and $N$ factors all cancel.
+  \item \texttt{phiBar\_ss\_hard} (layer $r\le b$ and diagonal seam $b=r-1$): the
+  asymptotically tight core, closed by a closed-form SOS certificate.
 \end{itemize}
-Discharging \texttt{phiBar\_ss\_hard} is the only ungreen node between
-Proposition~\ref{prop:comparison} and Theorem~\ref{thm:question}.
 
-\paragraph{The reduced tight inequality.}
-In the main layer sub-case (all three barrier values in the middle branch), put
-$s=\sqrt r$, $t=\sqrt{r+1}$ (so $s^2=r$, $t^2=s^2+1$, $1\le s\le t$). With layer
-membership $D_0=s^2+137s-(b+1)>0$, $D_1=s^2+137t-b>0$, $b\ge s^2+1$, clearing the
-positive denominators $91\,s\,t\,N$ reduces (SS) to the polynomial inequality
+\paragraph{The tight core and its certificate.}
+In the main layer sub-case, with $s=\sqrt r$, $t=\sqrt{r+1}$ ($s^2=r$, $t^2=s^2+1$,
+$1\le s\le t$), $w=b-r$, and layer membership ($D_0=s^2+137s-(b+1)>0$,
+$D_1=s^2+137t-b>0$, $b\ge s^2+1$), clearing $91\,s\,t\,N$ reduces (SS) to a
+polynomial inequality $0\le F(s,t,w)=A-t\,B_{+}$ that is asymptotically tight (at
+$r=10^4$, $b=17000$ the relative margin is $\approx3\times10^{-4}$). Since
+$A,B_{+}\ge0$ and $t\ge0$, this is equivalent to the square-root-free
+$A^2\ge(s^2+1)B_{+}^2$, i.e. $G(s,w)\ge0$ (\texttt{hard\_G\_nonneg}). Viewing $G$ as a
+quartic in $w$, its $[w^2,w,1]$ quadratic form is positive semidefinite for $s\ge1$,
+giving the closed-form Positivstellensatz identity
 \[
-  (s^2+1)\big(t\,D_0^2+91st\big)+(b+1)\big(s\,(D_1+1)^2-91st\big)
-  \ \le\ D_1^2\,s\,(s^2+b+2).
+  4\,c_4\,H_2\,G \;=\; H_2\,(2c_4w^2+c_3w)^2 \;+\; (H_2w+2c_4c_1)^2 \;+\; 4\,c_4\,H_3,
 \]
-This has been checked true (e.g.\ at $r=10^4$, $b=17000$ the gap is
-$\approx3.7\times10^{10}$ on terms of size $\approx10^{14}$, a relative margin
-$\approx3\times10^{-4}$), and its leading content is exactly $P\ge0$ with minimiser
-$x_*=(c+K)/3=76$, suggesting the square $(s^2+61t-b)^2$ (since $137-76=61$). It is a
-\emph{degree-7} Positivstellensatz problem in $s,t,b$ with the single constraint
-$t^2=s^2+1$, and is asymptotically tight. \texttt{nlinarith} does not find a
-certificate (a single SOS hint is insufficient; a broad hint set times out), so the
-remaining work is a hand-built or solver-generated SOS certificate, or a structural
-(convexity) argument replacing the brute-force clearing.
+where $c_4=3s^4+6s^2-1>0$, the Schur complements $H_2>0$ and $H_3\ge0$ are each
+proved by the shift $s=1+u$ (all coefficients then nonnegative). This replaces the
+failed \texttt{nlinarith} search by an exact \texttt{ring} identity plus three
+one-variable positivity lemmas (\texttt{hard\_c4\_pos}, \texttt{hard\_H2\_pos},
+\texttt{hard\_H3\_nonneg}). The hypothesis $r>137$ in \texttt{question} turns out to
+be unnecessary: \texttt{phiBar 91 137} is a global supersolution vanishing on
+$\{b\ge r+137\sqrt r\}$, so $e(r,b)=0$ holds there for all $r,b$.
 
 \end{document}
