@@ -1,4 +1,5 @@
 import Mathlib
+import SOS
 
 /-!
 
@@ -326,9 +327,16 @@ square-root-free polynomial inequality `G(s,w) ≥ 0`. Viewing `G` as a quartic 
 `w`, the matrix of its `[w²,w,1]` quadratic form is PSD for `s ≥ 1`, giving the
 closed-form Positivstellensatz certificate below. -/
 
-/-- `3s⁴+6s²-1 > 0` for `s ≥ 1` (the leading `w⁴`-coefficient of `G`). -/
+/-- `3s⁴+6s²-1 > 0` for `s ≥ 1` (the leading `w⁴`-coefficient of `G`).
+
+Closed automatically by the `sos` tactic (a sum-of-squares / Positivstellensatz
+search via CSDP). Run `sos?` instead of `sos` to freeze the discovered
+certificate into a solver-free `sos_witness` term. The higher-degree
+Schur-complement lemmas below (`hard_H2_pos`, `hard_H3_nonneg`) and the bivariate
+core `hard_G_nonneg` are beyond what the CSDP search finds at practical settings,
+so they keep their explicit certificates. -/
 theorem hard_c4_pos {s : ℝ} (hs : 1 ≤ s) : 0 < 3*s^4 + 6*s^2 - 1 := by
-  nlinarith [hs, sq_nonneg s, sq_nonneg (s^2 - 1)]
+  sos
 
 /-- The first Schur-complement polynomial `H₂ = 4c₄c₂ - c₃²` is `> 0` for `s ≥ 1`.
 Proved by the shift `s = 1+u`, after which every coefficient is nonnegative and the
@@ -657,10 +665,18 @@ theorem question (r b : ℕ) (hr : r > 137) (hb : (b : ℝ) > r + 137 * Real.sqr
   exact_mod_cast this
 
 /-
-TODO numina fuse suggests that the proof
-is amenable to Sum of squares (SOS) methods,
-which maybe means we could try to use the `sos`
-tactic in Lean to automate some of the polynomial inequalities.
+On using the `sos` tactic (sum-of-squares / Positivstellensatz via CSDP), as
+suggested by numina fuse. The `sos` project is now a dependency (`import SOS`),
+and `hard_c4_pos` above is discharged by `sos`. Findings on the rest:
 
-TODO add that project to the dependencies.
+* The Schur-complement lemmas `hard_H2_pos` (degree 10) and `hard_H3_nonneg`
+  (degree 18) and the bivariate quartic core `hard_G_nonneg` are *not* found by
+  the CSDP search, even with `sos (config := { maxDepth := 7,
+  maxRefutationPower := 2 })` (which runs for minutes before giving up). These
+  are the inequalities that genuinely needed the hand-built certificate, so they
+  retain the explicit completing-the-square Positivstellensatz identity and the
+  shift-`s = 1+u` positivity proofs.
+
+So `sos` automates the low-degree positivity in this file but does not (yet)
+replace the explicit certificate that carries the hard case.
 -/
