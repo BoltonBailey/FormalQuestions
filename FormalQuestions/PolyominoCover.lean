@@ -56,7 +56,7 @@ The density of a subset of the grid is measured against axis-aligned square boxe
 origin, taking the limit superior of the occupied proportion as the boxes grow. -/
 
 /-- The `(2n+1) × (2n+1)` axis-aligned box of grid cells centred at the origin. -/
-def boxFinset (n : ℕ) : Finset (ℤ × ℤ) :=
+noncomputable def boxFinset (n : ℕ) : Finset (ℤ × ℤ) :=
   (Finset.Icc (-(n : ℤ)) (n : ℤ)) ×ˢ (Finset.Icc (-(n : ℤ)) (n : ℤ))
 
 open Classical in

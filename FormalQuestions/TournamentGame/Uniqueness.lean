@@ -18,6 +18,7 @@ open Finset Matrix
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The identity matrix with one row replaced by all ones has determinant `1`. -/
 theorem det_one_updateRow_ones (i0 : V) :
     ((1 : Matrix V V (ZMod 2)).updateRow i0 (fun _ => 1)).det = 1 := by
@@ -250,6 +251,7 @@ variable {A : Type} [Fintype A] [DecidableEq A] (G : UniformActionNormalFormGame
 /-- The payoff matrix of the game (player 0's payoff). -/
 def Mtg : Matrix A A ℝ := fun a b => G.payoff 0 ![a, b]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Player 0's mixed payoff is the bilinear form of the payoff matrix. -/
 theorem payoff0_eq (profile : Fin 2 → PMF A) :
     G.toMixedGame.payoff 0 profile
@@ -258,8 +260,10 @@ theorem payoff0_eq (profile : Fin 2 → PMF A) :
     Finset.mul_sum]
   rw [tsum_fintype, ← Equiv.sum_comp (piFinTwoEquiv (fun _ => A)).symm, Fintype.sum_prod_type]
   refine Finset.sum_congr rfl (fun a _ => Finset.sum_congr rfl (fun b _ => ?_))
-  simp only [piFinTwoEquiv, Equiv.coe_fn_symm_mk, Fin.prod_univ_two, Fin.cons_zero, Fin.cons_one]
-  rw [show (Fin.cons a (Fin.cons b finZeroElim) : Fin 2 → A) = ![a, b] from rfl]
+  simp only [piFinTwoEquiv, Equiv.coe_fn_symm_mk]
+  rw [show (Fin.cons a (Fin.cons b finZeroElim) : Fin 2 → A) = ![a, b] from rfl,
+    Fin.prod_univ_two]
+  simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons]
   ring
 
 /-- For a zero-sum game, player 1's mixed payoff is the negation of player 0's. -/
