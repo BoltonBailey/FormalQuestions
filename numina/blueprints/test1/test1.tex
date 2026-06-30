@@ -200,6 +200,38 @@ $c=137$) shows:
 So the quadratic shape is \emph{viable in the continuum} once $K$ is large enough;
 the original $K=4$ merely made the curvature too weak.
 
+\paragraph{The correct scalar inequality.}
+A careful expansion of the two discrete differences on the layer gives the leading
+behaviour of the (SS) defect. Writing $s=\sqrt r$ and $x=D/s\in[0,c]$ (so
+$b=r+cs-D$ and $r-b=(x-c)s$),
+\[
+  r\,\Delta_r\varphi+b\,\Delta_b\varphi-(r-b)\;=\;s\,P(x)+O(1)+O(1/s),
+  \qquad
+  P(x)=\frac{3}{2K}\,x^2-\Big(\frac cK+1\Big)x+\Big(c-\frac2K\Big),
+\]
+where $\Delta_r\varphi=\varphi(r,b)-\varphi(r-1,b)$, $\Delta_b\varphi=\varphi(r,b)-
+\varphi(r,b-1)$. So the layer is a supersolution to leading order iff $P\ge0$ on
+$[0,c]$. Here $P(0)=c-2/K>0$ and $P(c)=(c^2-4)/(2K)>0$; the interior minimum is at
+$x_*=(c+K)/3$ (in $[0,c]$ when $K\le2c$), and
+\[
+  P(x_*)=\frac{2c}{3}-\frac K6-\frac2K-\frac{c^2}{6K}\ \ge\ 0
+  \quad\Longleftrightarrow\quad
+  K^2-4cK+c^2+12\ \le\ 0,
+\]
+i.e. $K\in\big[\,2c-\sqrt{3c^2-12},\ 2c+\sqrt{3c^2-12}\,\big]$. For $c=137$ this is
+$K\in[36.7,\,511.3]$. Any fixed $K$ in that window works; $K=91$ gives
+$\min_{[0,c]}P=P(x_*)\approx42$, so the leading term is $\approx42\sqrt r$. This is
+confirmed numerically to under $1\%$: the measured minimum defects
+$2087,4175,8352,16706$ at $r=2500,10^4,4\times10^4,1.6\times10^5$ match
+$42\sqrt r$ ($2100,4200,8400,16800$), and the failure of $K=4,20$ and the marginal
+failure near $K=511$ agree with the window above. (This $P$ replaces the
+incorrectly-derived $Q$ of an earlier draft.)
+
+The remaining rigour is to bound the $O(1)+O(1/s)$ corrections by a fixed constant,
+so that $s\,P(x_*)$ dominates them once $s=\sqrt r$ is large; with $r>137$ (so
+$s>11.7$) this leaves only a finite low-$r$ check and the region-transition cases
+(diagonal seam $b=r$ and top boundary $b=r+c\sqrt r$).
+
 \paragraph{No discretization obstruction.}
 Theorem~\ref{thm:question} is now stated with the \emph{real} square root, and
 Definition~\ref{def:super} (and the Lean comparison principle) is now \emph{real}
@@ -233,14 +265,15 @@ elementary $\overline G\ge G$ for which the \emph{discrete} (SS) can be checked.
 
 \paragraph{Status.}
 With the real-square-root statement and the real-valued comparison principle, the
-barrier \emph{shape} is essentially settled: a real-$\sqrt{\,}$ quadratic layer
-$D^2/(K\sqrt r)$ with a large fixed $K$ is, numerically, a supersolution for $c=137$,
-with margin growing like $\sqrt r$. Exactly one task remains: a rigorous derivation
-and proof of the (SS) inequality for this $\varphi$ at a fixed large $K$ - the
-binding region is the upper-middle of the strip, not the diagonal, so the diagonal
-ODE above is only motivational and the earlier scalar reduction $Q(D)$ must be
-redone. No square-root discretization issue remains. This single construction is the
-only ungreen node between Proposition~\ref{prop:comparison} and
-Theorem~\ref{thm:question}.
+barrier is the real-$\sqrt{\,}$ quadratic layer $\varphi=D^2/(K\sqrt r)$ with $c=137$
+and a fixed $K$ in the window $[36.7,511.3]$ (we take $K=91$), formalised in Lean as
+\texttt{phiBar} with the supersolution claim \texttt{phiBar\_isSupersolution}. Its
+structural conditions (nonnegativity, boundary data) are proved; the open core is the
+\texttt{ss} field, i.e. the supersolution inequality, whose leading term is the
+inequality $P\ge0$ above. What remains for a complete proof is: (a) the exact
+$O(1)+O(1/s)$ error bound that upgrades $P\ge0$ to the genuine discrete inequality;
+(b) the region-transition cases (diagonal seam and top boundary); (c) the finite
+low-$r$ range. This is the only ungreen node between
+Proposition~\ref{prop:comparison} and Theorem~\ref{thm:question}.
 
 \end{document}

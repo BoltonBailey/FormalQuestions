@@ -182,6 +182,64 @@ theorem e_le_of_supersolution {φ : ℕ → ℕ → ℝ} (hφ : IsSupersolution 
   intro r b
   exact H (r + b) r b rfl
 
+/-- The real-`√` quadratic barrier (blueprint, "The barrier"): a width-`c√r` layer
+with normalisation `K`, threshold constant `c`, glued to `0` above the strip and to
+the deterministic value `(r-b) + (c²/K)√r` below the diagonal. -/
+noncomputable def phiBar (K c : ℝ) (r b : ℕ) : ℝ :=
+  if (r : ℝ) + c * Real.sqrt r - b ≤ 0 then 0
+  else if (r : ℝ) ≤ b then ((r : ℝ) + c * Real.sqrt r - b) ^ 2 / (K * Real.sqrt r)
+  else ((r : ℝ) - b) + (c ^ 2 / K) * Real.sqrt r
+
+/-- The real-`√` quadratic barrier with `c = 137`, `K = 91` is a supersolution
+(blueprint `prop:comparison` would then give `e r b = 0` on the region).
+
+The structural fields (nonnegativity, boundary data) are proved here. The `ss`
+field - the supersolution inequality - reduces to the scalar inequality `P(x) ≥ 0`
+with `P(x) = (3/2K) x² - (c/K + 1) x + (c - 2/K)` plus a bounded `O(1) + O(1/√r)`
+error; that analytic core is the single remaining gap and is left as `sorry`. -/
+theorem phiBar_isSupersolution : IsSupersolution (phiBar 91 137) := by
+  refine ⟨?nonneg, ?zero_left, ?base, ?ss⟩
+  case nonneg =>
+    intro r b
+    unfold phiBar
+    split_ifs with h1 h2
+    · exact le_rfl
+    · positivity
+    · have hbr : (b : ℝ) ≤ r := le_of_lt (not_le.mp h2)
+      have hpos : (0 : ℝ) ≤ (137 ^ 2 / 91) * Real.sqrt r := by positivity
+      linarith
+  case zero_left =>
+    intro b
+    have hD : (↑(0 : ℕ) : ℝ) + 137 * Real.sqrt ↑(0 : ℕ) - (b : ℝ) ≤ 0 := by
+      simp only [Nat.cast_zero, Real.sqrt_zero, mul_zero, zero_add, zero_sub,
+        Left.neg_nonpos_iff]
+      positivity
+    unfold phiBar
+    rw [if_pos hD]
+  case base =>
+    intro r
+    unfold phiBar
+    split_ifs with h1 h2
+    · -- threshold reached at b = 0 forces r = 0, so the bound is 0 ≤ 0
+      have hs : Real.sqrt r ≥ 0 := Real.sqrt_nonneg _
+      have : (r : ℝ) ≤ 0 := by
+        have : (r : ℝ) + 137 * Real.sqrt r ≤ 0 := by simpa using h1
+        nlinarith
+      have hr0 : (r : ℝ) = 0 := le_antisymm this (Nat.cast_nonneg r)
+      simp [hr0]
+    · -- b = 0 and r ≤ 0 ⇒ r = 0; layer value is 0 ≥ 0 = ↑r
+      have hr0 : (r : ℝ) = 0 := le_antisymm (by simpa using h2) (Nat.cast_nonneg r)
+      simp [hr0]
+    · -- bulk piece: ↑r ≤ (↑r - 0) + (c²/K)√r
+      have hpos : (0 : ℝ) ≤ (137 ^ 2 / 91) * Real.sqrt r := by positivity
+      simp only [Nat.cast_zero, sub_zero]
+      linarith
+  case ss =>
+    intro r b
+    -- Reduces to `P(x) ≥ 0` (blueprint, "The correct scalar inequality") plus a
+    -- bounded `O(1) + O(1/√r)` error. Analytic core; not yet formalised.
+    sorry
+
 /-- **Question** would like to prove that given r > 137, and b > r + 137 √ r (real
 square root), then e(r, b) = 0.
 -/
