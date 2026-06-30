@@ -1,1 +1,15 @@
 /.lake
+
+# Blueprint build outputs
+/blueprint/print/
+/blueprint/web/
+/blueprint/src/*.aux
+/blueprint/src/*.log
+/blueprint/src/*.out
+/blueprint/src/*.toc
+/blueprint/src/*.fls
+/blueprint/src/*.fdb_latexmk
+/blueprint/src/*.bbl
+/blueprint/src/*.blg
+/blueprint/src/*.paux
+/blueprint/src/*.pdf

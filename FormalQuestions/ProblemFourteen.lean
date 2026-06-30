@@ -655,3 +655,12 @@ theorem question (r b : ℕ) (hr : r > 137) (hb : (b : ℝ) > r + 137 * Real.sqr
   have hge : (0 : ℝ) ≤ (e r b : ℝ) := by exact_mod_cast zero_le_e r b
   have : (e r b : ℝ) = 0 := le_antisymm (hfar ▸ hle) hge
   exact_mod_cast this
+
+/-
+TODO numina fuse suggests that the proof
+is amenable to Sum of squares (SOS) methods,
+which maybe means we could try to use the `sos`
+tactic in Lean to automate some of the polynomial inequalities.
+
+TODO add that project to the dependencies.
+-/

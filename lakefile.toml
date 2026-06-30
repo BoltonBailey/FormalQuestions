@@ -19,5 +19,14 @@ name = "VCVio"
 git = "https://github.com/Verified-zkEVM/VCV-io.git"
 rev = "v4.28.0"
 
+[[require]]
+name = "checkdecls"
+git = "https://github.com/PatrickMassot/checkdecls.git"
+
+[[require]]
+name = "doc-gen4"
+git = "https://github.com/leanprover/doc-gen4.git"
+rev = "v4.28.0"
+
 [[lean_lib]]
 name = "FormalQuestions"
