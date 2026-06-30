@@ -118,6 +118,59 @@ theorem pos_e_swap_add (n m : ℕ) (hn : 0 < n + m) : 0 < e n m + e m n := by
     linarith [sub_le_e n m, zero_le_e m n]
 
 
+/-- Unfolded recursion (blueprint `lem:recursion`): for `r, b ≥ 1` (here in the
+`r+1, b+1` form), `e` satisfies the optimality equation with `N = r + b + 2`. -/
+theorem e_succ_succ (r b : ℕ) :
+    e (r + 1) (b + 1) =
+      max 0 ((r + 1) / (r + b + 2) * (e r (b + 1) + 1)
+        + (b + 1) / (r + b + 2) * (e (r + 1) b - 1)) := by
+  simp only [e]
+
+/-- Reduction (blueprint `lem:reduction`): if the "continue" value is `≤ 0`, the
+equity is exactly `0`. -/
+theorem e_eq_zero_of_inner_nonpos (r b : ℕ)
+    (h : (r + 1) / (r + b + 2) * (e r (b + 1) + 1)
+        + (b + 1) / (r + b + 2) * (e (r + 1) b - 1) ≤ 0) :
+    e (r + 1) (b + 1) = 0 := by
+  rw [e_succ_succ]
+  exact max_eq_left h
+
+/-- Comparison principle (blueprint `prop:comparison`): any supersolution `φ`
+dominates the equity `e`. -/
+theorem e_le_of_supersolution (φ : ℕ → ℕ → ℚ)
+    (hnonneg : ∀ r b, 0 ≤ φ r b)
+    (_hzero : ∀ b, φ 0 b = 0)
+    (hbase : ∀ r : ℕ, (r : ℚ) ≤ φ r 0)
+    (hss : ∀ r b, (r + 1) / (r + b + 2) * (φ r (b + 1) + 1)
+        + (b + 1) / (r + b + 2) * (φ (r + 1) b - 1) ≤ φ (r + 1) (b + 1)) :
+    ∀ r b, e r b ≤ φ r b := by
+  have H : ∀ n r b, r + b = n → e r b ≤ φ r b := by
+    intro n
+    induction n using Nat.strong_induction_on with
+    | _ n ih =>
+      intro r b hrb
+      cases r with
+      | zero => simpa [e] using hnonneg 0 b
+      | succ r =>
+        cases b with
+        | zero => simpa [e] using hbase (r + 1)
+        | succ b =>
+          rw [e_succ_succ]
+          apply max_le (hnonneg _ _)
+          have h1 : e r (b + 1) ≤ φ r (b + 1) := ih (r + (b + 1)) (by omega) r (b + 1) rfl
+          have h2 : e (r + 1) b ≤ φ (r + 1) b := ih ((r + 1) + b) (by omega) (r + 1) b rfl
+          have hc1 : (0 : ℚ) ≤ (r + 1) / (r + b + 2) := by positivity
+          have hc2 : (0 : ℚ) ≤ (b + 1) / (r + b + 2) := by positivity
+          have f1 : (r + 1) / (r + b + 2) * (e r (b + 1) + 1)
+              ≤ (r + 1) / (r + b + 2) * (φ r (b + 1) + 1) :=
+            mul_le_mul_of_nonneg_left (by linarith) hc1
+          have f2 : (b + 1) / (r + b + 2) * (e (r + 1) b - 1)
+              ≤ (b + 1) / (r + b + 2) * (φ (r + 1) b - 1) :=
+            mul_le_mul_of_nonneg_left (by linarith) hc2
+          linarith [hss r b]
+  intro r b
+  exact H (r + b) r b rfl
+
 /-- **Question** would like to prove that given r > 137, and b > r + 137 √ r, then e(r, b) = 0.
 -/
 theorem question (r b : ℕ) (hr : r > 137) (hb : b > r + 137 * Nat.sqrt r) : e r b = 0 := by

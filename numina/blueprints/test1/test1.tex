@@ -77,6 +77,7 @@ on it being large enough.
 \section{Recursion and the reduction to an upper bound}
 
 \begin{lemma}[Unfolded recursion]\label{lem:recursion}
+\lean{e_succ_succ}\leanok
 \uses{def:e}
 For all $r,b\ge 1$, writing $N=r+b$,
 \[
@@ -84,12 +85,13 @@ For all $r,b\ge 1$, writing $N=r+b$,
                        +\tfrac{b}{N}\big(e(r,b-1)-1\big)\Big).
 \]
 \end{lemma}
-\begin{proof}
+\begin{proof}\leanok
 Write $r=r'+1$, $b=b'+1$ and apply Definition~\ref{def:e}; then $N=r'+b'+2=r+b$,
 $e(r',b'+1)=e(r-1,b)$ and $e(r'+1,b')=e(r,b-1)$.
 \end{proof}
 
 \begin{lemma}[Reduction]\label{lem:reduction}
+\lean{e_eq_zero_of_inner_nonpos}\leanok
 \uses{lem:recursion, lem:zero_le_e}
 For $r,b\ge 1$, if
 \[
@@ -97,7 +99,7 @@ For $r,b\ge 1$, if
 \]
 then $e(r,b)=0$.
 \end{lemma}
-\begin{proof}
+\begin{proof}\leanok
 By Lemma~\ref{lem:recursion} the right-hand side of the $\max$ is $\le 0$, so the
 $\max$ equals $0$; combined with $e(r,b)\ge 0$ this gives $e(r,b)=0$.
 \end{proof}
@@ -131,10 +133,11 @@ $\varphi$ does not exceed $\varphi$: rearranging (SS) gives
 \]
 
 \begin{proposition}[Comparison]\label{prop:comparison}
+\lean{e_le_of_supersolution}\leanok
 \uses{lem:recursion, def:super}
 If $\varphi$ is a supersolution, then $e(r,b)\le\varphi(r,b)$ for all $r,b$.
 \end{proposition}
-\begin{proof}
+\begin{proof}\leanok
 Strong induction on $r+b$.
 If $r=0$ then $e(0,b)=0\le\varphi(0,b)$ since $\varphi\ge0$.
 If $b=0$ then $e(r,0)=r\le\varphi(r,0)$ by (2).
