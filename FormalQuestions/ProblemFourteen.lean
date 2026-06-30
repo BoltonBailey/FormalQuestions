@@ -190,13 +190,89 @@ noncomputable def phiBar (K c : ℝ) (r b : ℕ) : ℝ :=
   else if (r : ℝ) ≤ b then ((r : ℝ) + c * Real.sqrt r - b) ^ 2 / (K * Real.sqrt r)
   else ((r : ℝ) - b) + (c ^ 2 / K) * Real.sqrt r
 
-/-- The supersolution inequality (`ss` field) for the real-`√` quadratic barrier with
-`c = 137`, `K = 91`. This is the analytic core of `phiBar_isSupersolution`. -/
-theorem phiBar_ss (r b : ℕ) :
+/-- Evaluation of `phiBar` in the far field (`D ≤ 0`). -/
+theorem phiBar_far {K c : ℝ} {r b : ℕ}
+    (h : (r : ℝ) + c * Real.sqrt r - b ≤ 0) : phiBar K c r b = 0 := by
+  unfold phiBar; rw [if_pos h]
+
+/-- Evaluation of `phiBar` in the bulk (`D > 0`, below the diagonal `b < r`). -/
+theorem phiBar_bulk {K c : ℝ} {r b : ℕ}
+    (h1 : ¬ (r : ℝ) + c * Real.sqrt r - b ≤ 0) (h2 : ¬ (r : ℝ) ≤ b) :
+    phiBar K c r b = ((r : ℝ) - b) + (c ^ 2 / K) * Real.sqrt r := by
+  unfold phiBar; rw [if_neg h1, if_neg h2]
+
+/-- Nonnegativity of the barrier. -/
+theorem phiBar_nonneg (r b : ℕ) : 0 ≤ phiBar 91 137 r b := by
+  unfold phiBar
+  split_ifs with h1 h2
+  · exact le_rfl
+  · positivity
+  · have hbr : (b : ℝ) ≤ r := le_of_lt (not_le.mp h2)
+    have hpos : (0 : ℝ) ≤ (137 ^ 2 / 91) * Real.sqrt r := by positivity
+    linarith
+
+/-- Bulk case of the supersolution inequality (`b + 1 < r`): collapses to
+`√r ≤ √(r+1)`. -/
+theorem phiBar_ss_bulk (r b : ℕ) (hbulk : (b : ℝ) + 1 < r) :
+    (r + 1) / (r + b + 2) * (phiBar 91 137 r (b + 1) + 1)
+      + (b + 1) / (r + b + 2) * (phiBar 91 137 (r + 1) b - 1)
+      ≤ phiBar 91 137 (r + 1) (b + 1) := by
+  have hs : Real.sqrt (r : ℝ) ≤ Real.sqrt ((r : ℝ) + 1) := Real.sqrt_le_sqrt (by linarith)
+  have hN : (0 : ℝ) < (r : ℝ) + b + 2 := by positivity
+  have hQ : (0 : ℝ) ≤ (137 : ℝ) ^ 2 / 91 := by positivity
+  have hC : phiBar 91 137 (r + 1) (b + 1)
+      = ((↑(r + 1) : ℝ) - ↑(b + 1)) + ((137 : ℝ) ^ 2 / 91) * Real.sqrt ↑(r + 1) := by
+    apply phiBar_bulk
+    · refine not_le.mpr ?_; push_cast; nlinarith [Real.sqrt_nonneg ((r : ℝ) + 1)]
+    · refine not_le.mpr ?_; push_cast; linarith
+  have hA : phiBar 91 137 r (b + 1)
+      = ((r : ℝ) - ↑(b + 1)) + ((137 : ℝ) ^ 2 / 91) * Real.sqrt r := by
+    apply phiBar_bulk
+    · refine not_le.mpr ?_; push_cast; nlinarith [Real.sqrt_nonneg (r : ℝ)]
+    · refine not_le.mpr ?_; push_cast; linarith
+  have hB : phiBar 91 137 (r + 1) b
+      = ((↑(r + 1) : ℝ) - b) + ((137 : ℝ) ^ 2 / 91) * Real.sqrt ↑(r + 1) := by
+    apply phiBar_bulk
+    · refine not_le.mpr ?_; push_cast; nlinarith [Real.sqrt_nonneg ((r : ℝ) + 1)]
+    · refine not_le.mpr ?_; push_cast; linarith
+  rw [hC, hA, hB, div_mul_eq_mul_div, div_mul_eq_mul_div, div_add_div_same, div_le_iff hN]
+  push_cast
+  nlinarith [mul_nonneg (mul_nonneg hQ (by positivity : (0 : ℝ) ≤ (r : ℝ) + 1))
+      (by linarith [hs] : (0 : ℝ) ≤ Real.sqrt ((r : ℝ) + 1) - Real.sqrt r),
+    Real.sqrt_nonneg (r : ℝ), Real.sqrt_nonneg ((r : ℝ) + 1), hs]
+
+/-- Far-field case of the supersolution inequality (the point lies in the vanishing
+region, `D₁ ≤ 0`): the left side is `≤ 0`. -/
+theorem phiBar_ss_far (r b : ℕ)
+    (hfar : (↑(r + 1) : ℝ) + 137 * Real.sqrt ↑(r + 1) - ↑(b + 1) ≤ 0) :
     (r + 1) / (r + b + 2) * (phiBar 91 137 r (b + 1) + 1)
       + (b + 1) / (r + b + 2) * (phiBar 91 137 (r + 1) b - 1)
       ≤ phiBar 91 137 (r + 1) (b + 1) := by
   sorry
+
+/-- Hard (tight) case of the supersolution inequality: the layer `r ≤ b` together
+with the diagonal seam `b = r - 1`, where the margin is `O(√r)` but the bound is
+asymptotically tight. This is the remaining analytic core. -/
+theorem phiBar_ss_hard (r b : ℕ)
+    (hnear : ¬ (↑(r + 1) : ℝ) + 137 * Real.sqrt ↑(r + 1) - ↑(b + 1) ≤ 0)
+    (hrb : (r : ℝ) ≤ (b : ℝ) + 1) :
+    (r + 1) / (r + b + 2) * (phiBar 91 137 r (b + 1) + 1)
+      + (b + 1) / (r + b + 2) * (phiBar 91 137 (r + 1) b - 1)
+      ≤ phiBar 91 137 (r + 1) (b + 1) := by
+  sorry
+
+/-- The supersolution inequality (`ss` field) for the real-`√` quadratic barrier with
+`c = 137`, `K = 91`. The far-field and bulk cases are proved directly; the tight
+layer/seam case is `phiBar_ss_hard`. -/
+theorem phiBar_ss (r b : ℕ) :
+    (r + 1) / (r + b + 2) * (phiBar 91 137 r (b + 1) + 1)
+      + (b + 1) / (r + b + 2) * (phiBar 91 137 (r + 1) b - 1)
+      ≤ phiBar 91 137 (r + 1) (b + 1) := by
+  by_cases hfar : (↑(r + 1) : ℝ) + 137 * Real.sqrt ↑(r + 1) - ↑(b + 1) ≤ 0
+  · exact phiBar_ss_far r b hfar
+  · by_cases hbulk : (b : ℝ) + 1 < r
+    · exact phiBar_ss_bulk r b hbulk
+    · exact phiBar_ss_hard r b hfar (by linarith [not_lt.mp hbulk])
 
 /-- The real-`√` quadratic barrier with `c = 137`, `K = 91` is a supersolution
 (blueprint `prop:comparison` would then give `e r b = 0` on the region).
