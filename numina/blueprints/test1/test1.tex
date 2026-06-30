@@ -159,10 +159,10 @@ $\varphi$ that \emph{vanishes} on the target region
 $R=\{(r,b): b\ge r+137\lfloor\sqrt r\rfloor\}$: then for $(r,b)\in R$ we get
 $0\le e(r,b)\le\varphi(r,b)=0$.
 
-\section{The barrier}
+\section{The barrier (open: the explicit supersolution)}
 
 \paragraph{Why a $\sqrt r$ layer.}
-Two observations fix the shape of $\varphi$. First, $r-b$ satisfies (SS) with
+Two observations constrain the shape of $\varphi$. First, $r-b$ satisfies (SS) with
 equality, since
 $r\big((r-b)-(r-1-b)\big)+b\big((r-b)-(r-b+1)\big)=r-b$; this is the value of the
 naive ``draw everything'' strategy. Second, $\max(0,r-b)$ is \emph{not} a
@@ -170,82 +170,76 @@ supersolution: at the diagonal $b=r$ one has $\varphi(r,r)=0$ but
 $\varphi(r,r-1)=1$, and (SS) there reads $0\ge \tfrac{r}{N}\cdot 1$, which fails.
 The size of this defect is governed by the known growth $e(r,r)=\Theta(\sqrt r)$,
 so any dominating supersolution must satisfy $\varphi(r,r)=\Omega(\sqrt r)$ while
-vanishing at $b=r+c\sqrt r$. Hence $\varphi$ must fall from order $\sqrt r$ to $0$
-across a strip of width $c\sqrt r$: a diffusive (heat-equation) boundary layer of
-width $\sqrt r$. This is precisely the origin of the $\sqrt r$ term in the
-threshold.
+vanishing at $b=r+c\sqrt r$: a diffusive boundary layer of width $\sqrt r$, which is
+the origin of the $\sqrt r$ term in the threshold.
 
-\paragraph{Explicit candidate.}
-Let $c=137$ and set $D(r,b)=r+c\sqrt r-b$ (the signed distance below the
-threshold). Define
+\paragraph{The quadratic barrier and its dependence on $K$.}
+The natural first guess is a quadratic layer
+$\varphi(r,b)=D^2/(K\sqrt r)$ with $D=r+c\sqrt r-b$ on the strip
+$r\le b\le r+c\sqrt r$, glued to $0$ above and to $(r-b)+\tfrac{c^2}{K}\sqrt r$ below.
+Whether this is a supersolution depends sharply on the normalisation $K$.
+Numerical exploration (Float, real $\sqrt{\,}$, $r$ up to $1.6\times10^{5}$,
+$c=137$) shows:
+\begin{itemize}
+  \item For \emph{small} $K$ (e.g. $K=4$) it is \emph{not} a supersolution: the
+  discrete (SS) defect goes negative, with the worst point in the interior of the
+  strip - \emph{not} at the diagonal, where the defect is in fact positive. (Two
+  earlier drafts of this blueprint mis-handled this: the first claimed a scalar
+  reduction $Q(D)\ge0$ holds, the second claimed it always fails; both rested on a
+  mis-derived $Q$ and on an arithmetic slip at the diagonal. Neither is correct.)
+  \item For \emph{large enough} $K$ (numerically $K\gtrsim 40$, comfortably at
+  $K=91$) the real-$\sqrt{\,}$ barrier \emph{does} satisfy the discrete (SS) for
+  every $b$, with minimum defect positive and growing like $\sqrt r$: e.g. at
+  $K=91$ the minimum defect over $b$ is about $2.1\times10^{3},\,4.2\times10^{3},\,
+  8.4\times10^{3},\,1.7\times10^{4}$ for $r=2500,\,10^{4},\,4\times10^{4},\,
+  1.6\times10^{5}$, attained in the upper-middle of the strip.
+\end{itemize}
+So the quadratic shape is \emph{viable in the continuum} once $K$ is large enough;
+the original $K=4$ merely made the curvature too weak.
+
+\paragraph{The discretization obstruction.}
+This continuum picture does not transfer verbatim, because the theorem's region uses
+$\lfloor\sqrt r\rfloor$ and $\varphi$ must be $\mathbb Q$-valued. Replacing $\sqrt r$
+by $m=\lfloor\sqrt r\rfloor$ makes $\varphi$ rational but injects $O(1)$ jumps in $m$
+at perfect squares and distorts the strip width by $O(1)$. Numerically the floor
+barrier then fails near perfect-square neighbours (e.g. $r=9999$ at $K=91$) and at
+small $r$, and - unlike the continuum case - increasing $K$ does \emph{not}
+uniformly help (it worsens small-$r$ points): no single $K$ tested passes for all
+$r>137$ (e.g. $K=500$ fails near $r=537$ and $r=10299$). A rigorous $\mathbb
+Q$-valued barrier therefore needs a monotone rational surrogate for $\sqrt r$ (so the
+$r$-difference keeps a controlled sign), or an enlarged constant plus an auxiliary
+correction absorbing the $O(1)$ floor errors.
+
+\paragraph{The correct diffusive structure (heuristic).}
+Expanding the differences in (SS) to second order, the supersolution inequality is,
+in the continuum, an obstacle problem with obstacle $0$ whose continuation-region
+equation is
 \[
-  \varphi(r,b)=
-  \begin{cases}
-    0, & D\le 0 \quad(\text{i.e. } b\ge r+c\sqrt r),\\[2pt]
-    \dfrac{D(r,b)^2}{K\sqrt r}, & 0\le D\le c\sqrt r \quad(\text{i.e. } r\le b\le r+c\sqrt r),\\[6pt]
-    (r-b)+\dfrac{c^2}{K}\sqrt r, & b\le r,
-  \end{cases}
+  r\,\varphi_r+b\,\varphi_b-\tfrac12\big(r\,\varphi_{rr}+b\,\varphi_{bb}\big)=r-b .
 \]
-with a fixed normalising constant $K$ (the analysis below restricts $K$ to a range
-in which the layer is a supersolution; $K=4$ is admissible). The three pieces match
-continuously: at $b=r+c\sqrt r$ both top pieces are $0$; at $b=r$ one has
-$D=c\sqrt r$, so the middle piece equals $c^2 r/(K\sqrt r)=\tfrac{c^2}{K}\sqrt r$,
-agreeing with the bottom piece.
-
-\paragraph{Boundary data.}
-$\varphi\ge 0$ everywhere by construction; $\varphi(0,b)=0$; and at $b=0$,
-$\varphi(r,0)=r+\tfrac{c^2}{K}\sqrt r\ge r$. So conditions (1)--(2) of
-Definition~\ref{def:super} hold.
-
-\paragraph{Verification of (SS).}
-There are three regions.
-
-\emph{(i) Region $b\ge r+c\sqrt r$ ($\varphi=0$ with nonnegative neighbours).}
-Here $\varphi(r,b)=0$ and $\varphi(r-1,b),\varphi(r,b-1)\ge0$, so the left-hand side
-of (SS) is $-r\varphi(r-1,b)-b\varphi(r,b-1)$; the two negative contributions are
-dominated by the gap $r-b\le -c\sqrt r<0$ available on the right-hand side, using
-that just inside the layer $\varphi(r,b-1)=D'^2/(K\sqrt r)$ with $D'\le 1$, hence
-$O(1/\sqrt r)$. Concretely (SS) becomes $-b\,\varphi(r,b-1)\ge r-b$, i.e.
-$b(1-\varphi(r,b-1))\ge r$, which holds because $\varphi(r,b-1)=O(1/\sqrt r)$ and
-$b\ge r$.
-
-\emph{(ii) Layer $r\le b\le r+c\sqrt r$ ($\varphi=D^2/(K\sqrt r)$).}
-This is the binding region. Substituting the quadratic and expanding the two
-discrete differences (using $\sqrt{r-1}=\sqrt r-\tfrac{1}{2\sqrt r}+O(r^{-3/2})$),
-the left-hand side of (SS) minus the right-hand side reduces, to leading order in
-$r$, to a one-variable quadratic in $D$:
+Seeking a self-similar profile $\varphi=\sqrt r\,G(\xi)$ with $\xi=(b-r)/\sqrt r$
+reduces this, to leading order near the diagonal, to the inhomogeneous ODE
 \[
-  Q(D)\ :=\ \frac{(4-K)}{K}\,\frac{D^2}{r}\ -\ \Big(\frac{2c}{K}-1\Big)\frac{D}{\sqrt r}
-            \ +\ \Big(c-\tfrac{c}{K}\Big)\frac{1}{\sqrt r}\ \ge\ 0,
+  G''-\xi G'-\tfrac12 G=\xi,\qquad \xi<c,
 \]
-to be checked for $0\le D\le c\sqrt r$. For $0<K\le 4$ the quadratic coefficient is
-$\ge0$; the minimum over the relevant range is attained at the diagonal endpoint
-$D=c\sqrt r$ and stays nonnegative once $c$ exceeds a fixed $O(1)$ threshold. With
-$c=137$ the inequality holds with substantial margin, including the lower-order
-$O(1)$ and $O(1/\sqrt r)$ corrections dropped above (these are bounded by a fixed
-multiple of $1/\sqrt r$ and are absorbed by the margin for $r>137$).
+with free-boundary (smooth-fit) data $G(c)=0$, $G'(c)=0$ and bulk matching
+$G(\xi)\sim -\xi$ as $\xi\to-\infty$. The homogeneous operator $G''-\xi G'$ is the
+Hermite operator, so the solution is a parabolic-cylinder function rather than an
+elementary expression; the constant $c$ is fixed by the matching and is a fixed
+$O(1)$ number, far below $137$ (the slack the problem statement exploits). A
+supersolution may safely overestimate this $G$, so the task is to find an explicit
+elementary $\overline G\ge G$ for which the \emph{discrete} (SS) can be checked.
 
-\emph{(iii) Region $b\le r$ ($\varphi=(r-b)+\tfrac{c^2}{K}\sqrt r$).}
-The additive term $\tfrac{c^2}{K}\sqrt r$ is independent of $b$, so the discrete
-differences of $\varphi$ in the $b$-direction equal those of $r-b$, while in the
-$r$-direction the extra term contributes $\tfrac{c^2}{K}(\sqrt r-\sqrt{r-1})>0$;
-(SS) holds because $r-b$ is an exact solution and $\sqrt r$ is concave in $r$, so
-the correction adds a nonnegative amount to the left-hand side. The only delicate
-point is the seam $b=r$, handled together with case (ii).
-
-\paragraph{Conclusion.}
-$\varphi$ is a supersolution vanishing on $R$. By
-Proposition~\ref{prop:comparison}, $e(r,b)\le\varphi(r,b)=0$ for $(r,b)\in R$, and
-with $e(r,b)\ge0$ we conclude $e(r,b)=0$, proving Theorem~\ref{thm:question}.
-
-\begin{remark}
-The formalisation target is the chain
-Lemma~\ref{lem:recursion} $\to$ Lemma~\ref{lem:reduction} $\to$
-Proposition~\ref{prop:comparison} $\to$ the explicit $\varphi$. The first three are
-clean and self-contained. The remaining finite work is the scalar inequality
-$Q(D)\ge0$ on $[0,c\sqrt r]$ together with the explicit lower-order error bounds in
-case (ii); these are elementary but arithmetic-heavy, and are where the size of the
-constant $137$ is actually consumed.
-\end{remark}
+\paragraph{Status.}
+The barrier \emph{shape} is essentially settled: a quadratic layer
+$D^2/(K\sqrt r)$ with a large fixed $K$ is, numerically, a supersolution in the
+continuum for $c=137$, with margin growing like $\sqrt r$. Two things remain for a
+rigorous proof: (a) a correct derivation and proof of the continuum (SS) inequality
+for a fixed large $K$ - the binding region is the upper-middle of the strip, not the
+diagonal, so the diagonal ODE above is only motivational and the earlier scalar
+reduction $Q(D)$ must be redone; and (b) a $\mathbb Q$-valued discretization
+controlling the $\lfloor\sqrt r\rfloor$ jumps and the small-$r$ regime. This single
+construction is the only ungreen node between Proposition~\ref{prop:comparison} and
+Theorem~\ref{thm:question}.
 
 \end{document}
