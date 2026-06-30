@@ -19,6 +19,7 @@ black cards, where a red draw pays $+1$, a black draw pays $-1$, and the player
 may stop at any time.
 
 \begin{definition}[Equity]\label{def:e}
+\lean{e}\leanok
 Define $e:\mathbb N\times\mathbb N\to\mathbb Q$ by
 \[
   e(0,b)=0,\qquad e(r,0)=r,
@@ -29,17 +30,41 @@ Define $e:\mathbb N\times\mathbb N\to\mathbb Q$ by
 \]
 \end{definition}
 
-We collect three facts already established in Lean:
-\begin{itemize}
-  \item $e(r,b)\ge 0$ for all $r,b$ (\texttt{zero\_le\_e});
-  \item $r-b\le e(r,b)$ for all $r,b$ (\texttt{sub\_le\_e}), the inequality being
-        read in $\mathbb Q$ after coercion;
-  \item $e(n,n)>0$ for $n>0$ (\texttt{e\_pos\_of\_pos}).
-\end{itemize}
+We record three facts already established in Lean.
+
+\begin{lemma}[Nonnegativity]\label{lem:zero_le_e}
+\lean{zero_le_e}\leanok
+\uses{def:e}
+$e(r,b)\ge 0$ for all $r,b$.
+\end{lemma}
+\begin{proof}\leanok
+Formalised in Lean (\texttt{zero\_le\_e}).
+\end{proof}
+
+\begin{lemma}[Lower bound]\label{lem:sub_le_e}
+\lean{sub_le_e}\leanok
+\uses{def:e}
+$r-b\le e(r,b)$ for all $r,b$, the inequality being read in $\mathbb Q$ after
+coercion.
+\end{lemma}
+\begin{proof}\leanok
+Formalised in Lean (\texttt{sub\_le\_e}).
+\end{proof}
+
+\begin{lemma}[Positivity on the diagonal]\label{lem:e_pos}
+\lean{e_pos_of_pos}\leanok
+\uses{def:e}
+$e(n,n)>0$ for $n>0$.
+\end{lemma}
+\begin{proof}\leanok
+Formalised in Lean (\texttt{e\_pos\_of\_pos}).
+\end{proof}
 
 \section{Goal}
 
 \begin{theorem}[\texttt{question}]\label{thm:question}
+\lean{question}
+\uses{prop:comparison, def:super, lem:zero_le_e}
 If $r>137$ and $b>r+137\,\lfloor\sqrt r\rfloor$, then $e(r,b)=0$.
 \end{theorem}
 
@@ -52,6 +77,7 @@ on it being large enough.
 \section{Recursion and the reduction to an upper bound}
 
 \begin{lemma}[Unfolded recursion]\label{lem:recursion}
+\uses{def:e}
 For all $r,b\ge 1$, writing $N=r+b$,
 \[
   e(r,b)=\max\!\Big(0,\ \tfrac{r}{N}\big(e(r-1,b)+1\big)
@@ -64,6 +90,7 @@ $e(r',b'+1)=e(r-1,b)$ and $e(r'+1,b')=e(r,b-1)$.
 \end{proof}
 
 \begin{lemma}[Reduction]\label{lem:reduction}
+\uses{lem:recursion, lem:zero_le_e}
 For $r,b\ge 1$, if
 \[
   \tfrac{r}{N}\big(e(r-1,b)+1\big)+\tfrac{b}{N}\big(e(r,b-1)-1\big)\le 0,
@@ -104,6 +131,7 @@ $\varphi$ does not exceed $\varphi$: rearranging (SS) gives
 \]
 
 \begin{proposition}[Comparison]\label{prop:comparison}
+\uses{lem:recursion, def:super}
 If $\varphi$ is a supersolution, then $e(r,b)\le\varphi(r,b)$ for all $r,b$.
 \end{proposition}
 \begin{proof}
