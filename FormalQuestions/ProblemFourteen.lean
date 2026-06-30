@@ -190,13 +190,19 @@ noncomputable def phiBar (K c : ℝ) (r b : ℕ) : ℝ :=
   else if (r : ℝ) ≤ b then ((r : ℝ) + c * Real.sqrt r - b) ^ 2 / (K * Real.sqrt r)
   else ((r : ℝ) - b) + (c ^ 2 / K) * Real.sqrt r
 
+/-- The supersolution inequality (`ss` field) for the real-`√` quadratic barrier with
+`c = 137`, `K = 91`. This is the analytic core of `phiBar_isSupersolution`. -/
+theorem phiBar_ss (r b : ℕ) :
+    (r + 1) / (r + b + 2) * (phiBar 91 137 r (b + 1) + 1)
+      + (b + 1) / (r + b + 2) * (phiBar 91 137 (r + 1) b - 1)
+      ≤ phiBar 91 137 (r + 1) (b + 1) := by
+  sorry
+
 /-- The real-`√` quadratic barrier with `c = 137`, `K = 91` is a supersolution
 (blueprint `prop:comparison` would then give `e r b = 0` on the region).
 
-The structural fields (nonnegativity, boundary data) are proved here. The `ss`
-field - the supersolution inequality - reduces to the scalar inequality `P(x) ≥ 0`
-with `P(x) = (3/2K) x² - (c/K + 1) x + (c - 2/K)` plus a bounded `O(1) + O(1/√r)`
-error; that analytic core is the single remaining gap and is left as `sorry`. -/
+The structural fields (nonnegativity, boundary data) are proved here; the `ss`
+field is `phiBar_ss`. -/
 theorem phiBar_isSupersolution : IsSupersolution (phiBar 91 137) := by
   refine ⟨?nonneg, ?zero_left, ?base, ?ss⟩
   case nonneg =>
@@ -234,11 +240,7 @@ theorem phiBar_isSupersolution : IsSupersolution (phiBar 91 137) := by
       have hpos : (0 : ℝ) ≤ (137 ^ 2 / 91) * Real.sqrt r := by positivity
       simp only [Nat.cast_zero, sub_zero]
       linarith
-  case ss =>
-    intro r b
-    -- Reduces to `P(x) ≥ 0` (blueprint, "The correct scalar inequality") plus a
-    -- bounded `O(1) + O(1/√r)` error. Analytic core; not yet formalised.
-    sorry
+  case ss => exact phiBar_ss
 
 /-- **Question** would like to prove that given r > 137, and b > r + 137 √ r (real
 square root), then e(r, b) = 0.
