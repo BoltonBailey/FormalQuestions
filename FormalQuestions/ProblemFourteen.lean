@@ -250,7 +250,36 @@ theorem phiBar_ss_far (r b : ℕ)
     (r + 1) / (r + b + 2) * (phiBar 91 137 r (b + 1) + 1)
       + (b + 1) / (r + b + 2) * (phiBar 91 137 (r + 1) b - 1)
       ≤ phiBar 91 137 (r + 1) (b + 1) := by
-  sorry
+  have hN : (0 : ℝ) < (r : ℝ) + b + 2 := by positivity
+  have hs01 : Real.sqrt (r : ℝ) ≤ Real.sqrt ((r : ℝ) + 1) := Real.sqrt_le_sqrt (by linarith)
+  have ht1 : (1 : ℝ) ≤ Real.sqrt ((r : ℝ) + 1) := by
+    rw [show (1 : ℝ) = Real.sqrt 1 from Real.sqrt_one.symm]
+    exact Real.sqrt_le_sqrt (by linarith [Nat.cast_nonneg (α := ℝ) r])
+  have htsq : Real.sqrt ((r : ℝ) + 1) ^ 2 = (r : ℝ) + 1 :=
+    Real.sq_sqrt (by linarith [Nat.cast_nonneg (α := ℝ) r])
+  have hfar' := hfar
+  push_cast at hfar'
+  have hC : phiBar 91 137 (r + 1) (b + 1) = 0 := phiBar_far hfar
+  have hA0 : (↑r : ℝ) + 137 * Real.sqrt ↑r - ↑(b + 1) ≤ 0 := by push_cast; nlinarith [hs01, hfar']
+  have hA : phiBar 91 137 r (b + 1) = 0 := phiBar_far hA0
+  have hbge : (r : ℝ) ≤ b := by nlinarith [ht1, hfar']
+  have hkey : (↑b + 1 : ℝ) * phiBar 91 137 (r + 1) b ≤ ↑b - ↑r := by
+    by_cases hBfar : (↑(r + 1) : ℝ) + 137 * Real.sqrt ↑(r + 1) - ↑b ≤ 0
+    · rw [phiBar_far hBfar, mul_zero]; linarith [hbge]
+    · have hlay : (↑(r + 1) : ℝ) ≤ ↑b := by push_cast; nlinarith [ht1, hfar']
+      have hBval : phiBar 91 137 (r + 1) b
+          = (↑(r + 1) + 137 * Real.sqrt ↑(r + 1) - ↑b) ^ 2 / (91 * Real.sqrt ↑(r + 1)) := by
+        unfold phiBar; rw [if_neg hBfar, if_pos hlay]
+      have hD0 : (0 : ℝ) < ↑r + 1 + 137 * Real.sqrt ((r : ℝ) + 1) - ↑b := by
+        have := not_le.mp hBfar; push_cast at this; linarith
+      rw [hBval]; push_cast
+      rw [← mul_div_assoc, div_le_iff₀ (by positivity : (0 : ℝ) < 91 * Real.sqrt ((r : ℝ) + 1))]
+      nlinarith [htsq, ht1, hfar', hD0, sq_nonneg (Real.sqrt ((r : ℝ) + 1) - 1),
+        mul_pos hD0 hD0, mul_nonneg (le_of_lt hD0) (sub_nonneg.mpr ht1)]
+  rw [hC, hA]
+  simp only [div_mul_eq_mul_div, zero_add]
+  rw [← add_div, div_le_iff₀ hN]
+  nlinarith [hkey]
 
 /-- Hard (tight) case of the supersolution inequality: the layer `r ≤ b` together
 with the diagonal seam `b = r - 1`, where the margin is `O(√r)` but the bound is
