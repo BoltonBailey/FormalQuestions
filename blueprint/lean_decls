@@ -7,3 +7,15 @@ e_succ_succ
 e_eq_zero_of_inner_nonpos
 IsSupersolution
 e_le_of_supersolution
+phiBar
+phiBar_isSupersolution_of
+phiBar_ss_far_of
+phiBar_ss_bulk_of
+phiBar_le_layerform_of
+phiBar_ss_hard_of
+hard_c4_pos
+hard_H2_pos_6_4
+hard_H3_nonneg_6_4
+hard_G_nonneg_6_4
+layer_core_6_4
+phiBar_isSupersolution_6_4

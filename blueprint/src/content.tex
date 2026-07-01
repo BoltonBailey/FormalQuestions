@@ -26,7 +26,7 @@ We record three facts already established in Lean.
 \uses{def:e}
 $e(r,b)\ge 0$ for all $r,b$.
 \end{lemma}
-\begin{proof}
+\begin{proof}\leanok
 Formalised in Lean (\texttt{zero\_le\_e}).
 \end{proof}
 
@@ -53,16 +53,19 @@ Formalised in Lean (\texttt{e\_pos\_of\_pos}).
 
 \begin{theorem}[\texttt{question}]\label{thm:question}
 \lean{question}\leanok
-\uses{prop:comparison, def:super, lem:zero_le_e}
-If $r>137$ and $b>r+137\sqrt r$, where $\sqrt r$ is the real square root and the
-inequality is read in $\mathbb R$ after casting $r,b$, then $e(r,b)=0$.
+\uses{thm:super_6_4, prop:comparison, lem:zero_le_e}
+If $b>r+4\sqrt r$, where $\sqrt r$ is the real square root and the inequality is
+read in $\mathbb R$ after casting $r,b$, then $e(r,b)=0$ --- for \emph{all} $r,b$,
+with no lower bound on $r$.
 \end{theorem}
 
-The constant $137$ is a deliberately generous threshold: the genuine boundary of
-the region $\{e=0\}$ sits at a distance of order $\sqrt r$ above the diagonal, and
-any sufficiently large constant in front of $\sqrt r$ works. The proof below is an
-upper-bound (supersolution) argument; it does not depend on the exact value, only
-on it being large enough.
+The constant $4$ is not special: it is the width constant of one particular barrier
+we choose to formalise (Section~\ref{sec:instance}). The proof is an upper-bound
+(supersolution) argument valid for any pair $(K,c)$ meeting the constraints of
+Theorem~\ref{thm:general}; a \emph{smaller} $c$ gives a \emph{tighter} zero region,
+and $c$ can be pushed down to roughly $1+\sqrt2$ before the constraints become
+infeasible. (An earlier version of this file used the deliberately generous
+placeholder $c=137$; nothing depended on that value beyond it being large enough.)
 
 \section{Recursion and the reduction to an upper bound}
 
@@ -94,12 +97,6 @@ By Lemma~\ref{lem:recursion} the right-hand side of the $\max$ is $\le 0$, so th
 $\max$ equals $0$; combined with $e(r,b)\ge 0$ this gives $e(r,b)=0$.
 \end{proof}
 
-It is convenient to clear the denominator $N$. Multiplying the inner expression by
-$N>0$, the inequality of Lemma~\ref{lem:reduction} is equivalent to
-\[
-  r\big(e(r-1,b)+1\big)+b\big(e(r,b-1)-1\big)\le 0 .
-\]
-
 \section{The comparison (supersolution) principle}
 
 \begin{definition}[Supersolution]\label{def:super}
@@ -110,20 +107,13 @@ A real-valued function $\varphi:\mathbb N\times\mathbb N\to\mathbb R$ is a
 \begin{enumerate}
   \item $\varphi(r,b)\ge 0$ for all $r,b$;
   \item $\varphi(0,b)=0$ and $\varphi(r,0)\ge r$;
-  \item for all $r,b\ge1$,
+  \item for all $r,b\ge1$, writing $N=r+b$,
   \[
-    r\big(\varphi(r,b)-\varphi(r-1,b)\big)
-    +b\big(\varphi(r,b)-\varphi(r,b-1)\big)\ \ge\ r-b. \tag{SS}
+    \tfrac{r}{N}\big(\varphi(r-1,b)+1\big)+\tfrac{b}{N}\big(\varphi(r,b-1)-1\big)
+      \ \le\ \varphi(r,b). \tag{SS}
   \]
 \end{enumerate}
 \end{definition}
-
-Condition (SS) is exactly the statement that the ``continue'' value built from
-$\varphi$ does not exceed $\varphi$: rearranging (SS) gives
-\[
-  \varphi(r,b)\ \ge\ \tfrac{r}{N}\big(\varphi(r-1,b)+1\big)
-                    +\tfrac{b}{N}\big(\varphi(r,b-1)-1\big).
-\]
 
 \begin{proposition}[Comparison]\label{prop:comparison}
 \lean{e_le_of_supersolution}\leanok
@@ -136,158 +126,205 @@ Strong induction on $r+b$.
 If $r=0$ then $e(0,b)=0\le\varphi(0,b)$ since $\varphi\ge0$.
 If $b=0$ then $e(r,0)=r\le\varphi(r,0)$ by (2).
 For $r,b\ge1$, Lemma~\ref{lem:recursion} gives
-\[
-  e(r,b)=\max\!\Big(0,\ \tfrac{r}{N}(e(r-1,b)+1)+\tfrac{b}{N}(e(r,b-1)-1)\Big).
-\]
-The coefficients $r/N,\ b/N$ are nonnegative; by the induction hypothesis
-$e(r-1,b)\le\varphi(r-1,b)$ and $e(r,b-1)\le\varphi(r,b-1)$, so the inner expression
-is at most $\tfrac{r}{N}(\varphi(r-1,b)+1)+\tfrac{b}{N}(\varphi(r,b-1)-1)$, which by
-the rearranged (SS) is $\le\varphi(r,b)$. Since also $0\le\varphi(r,b)$, the maximum
-is $\le\varphi(r,b)$.
+$e(r,b)=\max(0,\ \tfrac{r}{N}(e(r-1,b)+1)+\tfrac{b}{N}(e(r,b-1)-1))$;
+the coefficients $r/N,\ b/N$ are nonnegative, so by the induction hypothesis and
+(SS) the inner expression is $\le\varphi(r,b)$, and since $0\le\varphi(r,b)$ the
+maximum is $\le\varphi(r,b)$.
 \end{proof}
 
-Thus, to prove Theorem~\ref{thm:question} it suffices to exhibit a supersolution
-$\varphi$ that \emph{vanishes} on the target region
-$R=\{(r,b): b\ge r+137\sqrt r\}$ (real $\sqrt r$): then for $(r,b)\in R$ we get
-$0\le e(r,b)\le\varphi(r,b)=0$.
+Thus, to prove $e(r,b)=0$ on a region it suffices to exhibit a supersolution
+$\varphi$ that \emph{vanishes} there: then $0\le e(r,b)\le\varphi(r,b)=0$.
 
-\section{The barrier (the explicit supersolution)}
+\section{The barrier and the general supersolution theorem}
+
+\begin{definition}[Quadratic barrier $\varphi_{K,c}$]\label{def:phiBar}
+\lean{phiBar}\leanok
+\uses{def:e}
+For real parameters $K,c$ (a normalisation and a width constant) set, with
+$D=r+c\sqrt r-b$,
+\[
+  \varphi_{K,c}(r,b)=
+  \begin{cases}
+    0, & D\le 0 \quad(\text{far field}),\\[2pt]
+    D^2/(K\sqrt r), & D>0,\ r\le b \quad(\text{layer}),\\[2pt]
+    (r-b)+\tfrac{c^2}{K}\sqrt r, & D>0,\ b<r \quad(\text{bulk}).
+  \end{cases}
+\]
+\end{definition}
+
+\begin{theorem}[General supersolution theorem]\label{thm:general}
+\lean{phiBar_isSupersolution_of}\leanok
+\uses{def:super, def:phiBar, lem:layerform, prop:ss_far, prop:ss_bulk, prop:ss_hard}
+Suppose $(K,c)$ satisfy the four polynomial side-conditions
+\[
+  1\le K,\qquad K\le 2c,\qquad 1\le c(K-1),\qquad
+  K^2-8Kc+2K+4c^2+16c+13\ \le\ 0,
+\]
+together with the \emph{layer inequality}: for all $s\ge1$, $w\ge0$, $t\ge0$ with
+$t^2=s^2+1$,
+\[
+  0\ \le\ s(ct-w)^2(2s^2+w+2)-(s^2+1)\big(t(cs-w-1)^2+Kst\big)
+          -(s^2+w+1)\big(s(ct-w+1)^2-Kst\big). \tag{L}
+\]
+Then $\varphi_{K,c}$ is a supersolution.
+\end{theorem}
+
+The last polynomial condition already forces $c\ge 1+\sqrt2$; it is exactly the
+requirement that the $r=0$ base case $3b^2+(K-4c+1)b+(c^2-2c-1)\ge0$ hold for all
+$b$ (nonnegative discriminant of the admissible-$K$ window). The remaining three
+are the positivity of $\varphi_{K,c}$ ($K>0$), the bulk~$\le$~layer-form bound
+($K\le2c$), and the far-field bound ($1\le c(K-1)$). The genuinely
+$(K,c)$-dependent content is the layer inequality~(L).
 
 \paragraph{Why a $\sqrt r$ layer.}
 Two observations constrain the shape of $\varphi$. First, $r-b$ satisfies (SS) with
-equality, since
-$r\big((r-b)-(r-1-b)\big)+b\big((r-b)-(r-b+1)\big)=r-b$; this is the value of the
-naive ``draw everything'' strategy. Second, $\max(0,r-b)$ is \emph{not} a
-supersolution: at the diagonal $b=r$ one has $\varphi(r,r)=0$ but
-$\varphi(r,r-1)=1$, and (SS) there reads $0\ge \tfrac{r}{N}\cdot 1$, which fails.
-The size of this defect is governed by the known growth $e(r,r)=\Theta(\sqrt r)$,
-so any dominating supersolution must satisfy $\varphi(r,r)=\Omega(\sqrt r)$ while
-vanishing at $b=r+c\sqrt r$: a diffusive boundary layer of width $\sqrt r$, which is
-the origin of the $\sqrt r$ term in the threshold.
+equality: $r((r-b)-(r-1-b))+b((r-b)-(r-b+1))=r-b$; this is the value of the naive
+``draw everything'' strategy. Second, $\max(0,r-b)$ is \emph{not} a supersolution:
+at the diagonal $b=r$ one has $\varphi(r,r)=0$ but $\varphi(r,r-1)=1$, and (SS)
+there fails. The defect is governed by the known growth $e(r,r)=\Theta(\sqrt r)$,
+so a dominating supersolution must satisfy $\varphi(r,r)=\Omega(\sqrt r)$ while
+vanishing at $b=r+c\sqrt r$: a diffusive boundary layer of width $\sqrt r$, the
+origin of the $\sqrt r$ term in the threshold.
 
-\paragraph{The quadratic barrier and its dependence on $K$.}
-The natural first guess is a quadratic layer
-$\varphi(r,b)=D^2/(K\sqrt r)$ with $D=r+c\sqrt r-b$ on the strip
-$r\le b\le r+c\sqrt r$, glued to $0$ above and to $(r-b)+\tfrac{c^2}{K}\sqrt r$ below.
-Whether this is a supersolution depends sharply on the normalisation $K$.
-Numerical exploration (Float, real $\sqrt{\,}$, $r$ up to $1.6\times10^{5}$,
-$c=137$) shows:
-\begin{itemize}
-  \item For \emph{small} $K$ (e.g. $K=4$) it is \emph{not} a supersolution: the
-  discrete (SS) defect goes negative, with the worst point in the interior of the
-  strip - \emph{not} at the diagonal, where the defect is in fact positive. (Two
-  earlier drafts of this blueprint mis-handled this: the first claimed a scalar
-  reduction $Q(D)\ge0$ holds, the second claimed it always fails; both rested on a
-  mis-derived $Q$ and on an arithmetic slip at the diagonal. Neither is correct.)
-  \item For \emph{large enough} $K$ (numerically $K\gtrsim 40$, comfortably at
-  $K=91$) the real-$\sqrt{\,}$ barrier \emph{does} satisfy the discrete (SS) for
-  every $b$, with minimum defect positive and growing like $\sqrt r$: e.g. at
-  $K=91$ the minimum defect over $b$ is about $2.1\times10^{3},\,4.2\times10^{3},\,
-  8.4\times10^{3},\,1.7\times10^{4}$ for $r=2500,\,10^{4},\,4\times10^{4},\,
-  1.6\times10^{5}$, attained in the upper-middle of the strip.
-\end{itemize}
-So the quadratic shape is \emph{viable in the continuum} once $K$ is large enough;
-the original $K=4$ merely made the curvature too weak.
-
-\paragraph{The correct scalar inequality.}
-A careful expansion of the two discrete differences on the layer gives the leading
-behaviour of the (SS) defect. Writing $s=\sqrt r$ and $x=D/s\in[0,c]$ (so
-$b=r+cs-D$ and $r-b=(x-c)s$),
+\paragraph{The continuum window (heuristic).}
+Expanding the two discrete differences of the layer $\varphi_{K,c}=D^2/(K\sqrt r)$,
+with $s=\sqrt r$ and $x=D/s\in[0,c]$,
 \[
   r\,\Delta_r\varphi+b\,\Delta_b\varphi-(r-b)\;=\;s\,P(x)+O(1)+O(1/s),
   \qquad
-  P(x)=\frac{3}{2K}\,x^2-\Big(\frac cK+1\Big)x+\Big(c-\frac2K\Big),
+  P(x)=\tfrac{3}{2K}x^2-\big(\tfrac cK+1\big)x+\big(c-\tfrac2K\big).
 \]
-where $\Delta_r\varphi=\varphi(r,b)-\varphi(r-1,b)$, $\Delta_b\varphi=\varphi(r,b)-
-\varphi(r,b-1)$. So the layer is a supersolution to leading order iff $P\ge0$ on
-$[0,c]$. Here $P(0)=c-2/K>0$ and $P(c)=(c^2-4)/(2K)>0$; the interior minimum is at
-$x_*=(c+K)/3$ (in $[0,c]$ when $K\le2c$), and
+So to leading order the layer is a supersolution iff $P\ge0$ on $[0,c]$, whose
+interior minimum at $x_*=(c+K)/3$ gives
 \[
-  P(x_*)=\frac{2c}{3}-\frac K6-\frac2K-\frac{c^2}{6K}\ \ge\ 0
-  \quad\Longleftrightarrow\quad
-  K^2-4cK+c^2+12\ \le\ 0,
+  P(x_*)\ge0\iff K^2-4cK+c^2+12\le0
+  \iff K\in\big[\,2c-\sqrt{3c^2-12},\ 2c+\sqrt{3c^2-12}\,\big],
 \]
-i.e. $K\in\big[\,2c-\sqrt{3c^2-12},\ 2c+\sqrt{3c^2-12}\,\big]$. For $c=137$ this is
-$K\in[36.7,\,511.3]$. Any fixed $K$ in that window works; $K=91$ gives
-$\min_{[0,c]}P=P(x_*)\approx42$, so the leading term is $\approx42\sqrt r$. This is
-confirmed numerically to under $1\%$: the measured minimum defects
-$2087,4175,8352,16706$ at $r=2500,10^4,4\times10^4,1.6\times10^5$ match
-$42\sqrt r$ ($2100,4200,8400,16800$), and the failure of $K=4,20$ and the marginal
-failure near $K=511$ agree with the window above. (This $P$ replaces the
-incorrectly-derived $Q$ of an earlier draft.)
+nonempty exactly when $c\ge2$. The rigorous discrete constraints of
+Theorem~\ref{thm:general} are a slightly stronger (finite-$r$) version of this
+window, pushing the feasibility floor from $c\ge2$ up to $c\ge1+\sqrt2$.
 
-The remaining rigour is to bound the $O(1)+O(1/s)$ corrections by a fixed constant,
-so that $s\,P(x_*)$ dominates them once $s=\sqrt r$ is large; with $r>137$ (so
-$s>11.7$) this leaves only a finite low-$r$ check and the region-transition cases
-(diagonal seam $b=r$ and top boundary $b=r+c\sqrt r$).
+\paragraph{The continuum profile (heuristic).}
+To second order the (SS) inequality is, in the continuum, an obstacle problem with
+obstacle $0$ whose continuation equation
+$r\varphi_r+b\varphi_b-\tfrac12(r\varphi_{rr}+b\varphi_{bb})=r-b$, under the
+self-similar ansatz $\varphi=\sqrt r\,G(\xi)$ with $\xi=(b-r)/\sqrt r$, reduces near
+the diagonal to the Hermite-type ODE $G''-\xi G'-\tfrac12G=\xi$ with smooth-fit
+data $G(c)=G'(c)=0$ and bulk matching $G\sim-\xi$. The genuine boundary constant is
+a fixed $O(1)$ number; the quadratic layer is an explicit elementary
+over-estimate for which the \emph{discrete} (SS) can be checked.
 
-\paragraph{No discretization obstruction.}
-Theorem~\ref{thm:question} is now stated with the \emph{real} square root, and
-Definition~\ref{def:super} (and the Lean comparison principle) is now \emph{real}
-valued: $\varphi:\mathbb N\times\mathbb N\to\mathbb R$ with the conclusion
-$(e(r,b):\mathbb R)\le\varphi(r,b)$. Consequently the barrier may use $\sqrt r$
-directly. The earlier difficulty - that $\lfloor\sqrt r\rfloor$ injects $O(1)$ jumps
-at perfect squares and that a $\mathbb Q$-valued $\varphi$ cannot equal
-$D^2/(K\sqrt r)$ - disappears entirely. The real-$\sqrt{\,}$ quadratic barrier with a
-large fixed $K$ above is therefore exactly the object to formalise; nothing further
-about square-root discretization is needed.
+\paragraph{Region lemmas.}
+The supersolution inequality (SS) for $\varphi_{K,c}$ is proved by splitting on
+which piece each of the three involved points lands in.
 
-\paragraph{The correct diffusive structure (heuristic).}
-Expanding the differences in (SS) to second order, the supersolution inequality is,
-in the continuum, an obstacle problem with obstacle $0$ whose continuation-region
-equation is
-\[
-  r\,\varphi_r+b\,\varphi_b-\tfrac12\big(r\,\varphi_{rr}+b\,\varphi_{bb}\big)=r-b .
-\]
-Seeking a self-similar profile $\varphi=\sqrt r\,G(\xi)$ with $\xi=(b-r)/\sqrt r$
-reduces this, to leading order near the diagonal, to the inhomogeneous ODE
-\[
-  G''-\xi G'-\tfrac12 G=\xi,\qquad \xi<c,
-\]
-with free-boundary (smooth-fit) data $G(c)=0$, $G'(c)=0$ and bulk matching
-$G(\xi)\sim -\xi$ as $\xi\to-\infty$. The homogeneous operator $G''-\xi G'$ is the
-Hermite operator, so the solution is a parabolic-cylinder function rather than an
-elementary expression; the constant $c$ is fixed by the matching and is a fixed
-$O(1)$ number, far below $137$ (the slack the problem statement exploits). A
-supersolution may safely overestimate this $G$, so the task is to find an explicit
-elementary $\overline G\ge G$ for which the \emph{discrete} (SS) can be checked.
+\begin{proposition}[Far field]\label{prop:ss_far}
+\lean{phiBar_ss_far_of}\leanok
+\uses{def:phiBar}
+If $1\le K$, $1\le c$, $1\le c(K-1)$ and the target point is in the far field, then
+(SS) holds; the left-hand side is in fact $\le0$.
+\end{proposition}
+\begin{proof}\leanok Formalised: after rewriting the vanishing points, the one
+surviving layer term is controlled by $D\le1$ and $c\sqrt{r+1}\le b-r$, closed by a
+single \texttt{nlinarith} over the cleared formulas. \end{proof}
 
-\paragraph{Status: complete.}
-With the real-square-root statement and the real-valued comparison principle, the
-barrier is the real-$\sqrt{\,}$ quadratic layer $\varphi=D^2/(K\sqrt r)$ with $c=137$
-and $K=91$ (in the admissible window $[36.7,511.3]$), formalised in Lean as
-\texttt{phiBar}, and the supersolution claim \texttt{phiBar\_isSupersolution} is now
-\textbf{fully proved}. Hence \texttt{question} (Theorem~\ref{thm:question}) is proved
-with no \texttt{sorry}: the whole chain \texttt{phiBar} $\to$
-\texttt{phiBar\_isSupersolution} $\to$ \texttt{e\_le\_of\_supersolution} $\to$
-\texttt{question} compiles. The supersolution inequality \texttt{phiBar\_ss} is split
-by region, all three cases proved:
-\begin{itemize}
-  \item \texttt{phiBar\_ss\_far} (far field $D_1\le0$): the left side is $\le0$;
-  sign facts plus a loose bound from $\sqrt r\le\sqrt{r+1}$, $\sqrt{r+1}\ge1$.
-  \item \texttt{phiBar\_ss\_bulk} ($b+1<r$): collapses exactly to
-  $\sqrt r\le\sqrt{r+1}$ - the $137^2/91$ and $N$ factors all cancel.
-  \item \texttt{phiBar\_ss\_hard} (layer $r\le b$ and diagonal seam $b=r-1$): the
-  asymptotically tight core, closed by a closed-form SOS certificate.
-\end{itemize}
+\begin{proposition}[Bulk]\label{prop:ss_bulk}
+\lean{phiBar_ss_bulk_of}\leanok
+\uses{def:phiBar}
+If $0<K$ and $b+1<r$, then (SS) holds; it collapses to $\sqrt r\le\sqrt{r+1}$, the
+$c^2/K$ and $N$ factors cancelling.
+\end{proposition}
+\begin{proof}\leanok Formalised (\texttt{phiBar\_ss\_bulk\_of}). \end{proof}
 
-\paragraph{The tight core and its certificate.}
-In the main layer sub-case, with $s=\sqrt r$, $t=\sqrt{r+1}$ ($s^2=r$, $t^2=s^2+1$,
-$1\le s\le t$), $w=b-r$, and layer membership ($D_0=s^2+137s-(b+1)>0$,
-$D_1=s^2+137t-b>0$, $b\ge s^2+1$), clearing $91\,s\,t\,N$ reduces (SS) to a
-polynomial inequality $0\le F(s,t,w)=A-t\,B_{+}$ that is asymptotically tight (at
-$r=10^4$, $b=17000$ the relative margin is $\approx3\times10^{-4}$). Since
-$A,B_{+}\ge0$ and $t\ge0$, this is equivalent to the square-root-free
-$A^2\ge(s^2+1)B_{+}^2$, i.e. $G(s,w)\ge0$ (\texttt{hard\_G\_nonneg}). Viewing $G$ as a
-quartic in $w$, its $[w^2,w,1]$ quadratic form is positive semidefinite for $s\ge1$,
-giving the closed-form Positivstellensatz identity
+\begin{proposition}[Layer-form bound]\label{lem:layerform}
+\lean{phiBar_le_layerform_of}\leanok
+\uses{def:phiBar}
+If $0<K\le 2c$ and $R\ge1$, then $\varphi_{K,c}(R,b)\le(R+c\sqrt R-b)^2/(K\sqrt R)$;
+in the bulk the cleared difference is $(R-b)\big((R-b)+(2c-K)\sqrt R\big)\ge0$.
+\end{proposition}
+\begin{proof}\leanok Formalised (\texttt{phiBar\_le\_layerform\_of}). \end{proof}
+
+\begin{proposition}[Hard (layer/seam) case]\label{prop:ss_hard}
+\lean{phiBar_ss_hard_of}\leanok
+\uses{def:phiBar, lem:layerform}
+Assuming the $r=0$ discriminant condition and the layer inequality (L) of
+Theorem~\ref{thm:general}, (SS) holds on the layer $r\le b$ and the diagonal seam
+$b=r-1$.
+\end{proposition}
+\begin{proof}\leanok
+Three sub-cases: the $r=0$ base reduces to $3b^2+(K-4c+1)b+(c^2-2c-1)\ge0$, which
+follows from the discriminant condition; the seam $b=r-1$ collapses to
+$c^2(b+2)(\sqrt{b+2}-\sqrt{b+1})\ge0$; and the main layer $b\ge r$ is
+$\varphi\le$~layer-form (Proposition~\ref{lem:layerform}) followed by the divided
+layer inequality (L).
+\end{proof}
+
+\section{The concrete instance $(K,c)=(6,4)$ and its certificate}
+\label{sec:instance}
+
+We instantiate Theorem~\ref{thm:general} with $K=6$, $c=4$. The four side-conditions
+hold ($6\le8$, $1\le4\cdot5=20$, and $6^2-8\cdot6\cdot4+2\cdot6+4\cdot4^2+16\cdot4+13=-3\le0$),
+so it remains to verify the layer inequality (L). We clear the square root: writing
+$s=\sqrt r$, $t=\sqrt{r+1}$ ($t^2=s^2+1$), $w=b-r$, (L) has the shape $A-tB_{+}$ with
+$A,B_{+}\ge0$, hence is equivalent to the square-root-free $A^2\ge(s^2+1)B_{+}^2$,
+i.e. $G(s,w)\ge0$.
+
+\begin{lemma}[Leading coefficient]\label{lem:c4}
+\lean{hard_c4_pos}\leanok
+$3s^4+6s^2-1>0$ for $s\ge1$. This is the $w^4$-coefficient of $G$, and it is
+\emph{independent} of $K,c$.
+\end{lemma}
+\begin{proof}\leanok
+Closed by the \texttt{sos} tactic (a sum-of-squares / Positivstellensatz search).
+\end{proof}
+
+\begin{lemma}[Schur complements]\label{lem:H23}
+\lean{hard_H2_pos_6_4, hard_H3_nonneg_6_4}\leanok
+For $s\ge1$ the two Schur-complement polynomials of $G$'s $[w^2,w,1]$ quadratic form
+are positive/nonnegative: $H_2(s)>0$ (degree $10$) and $H_3(s)\ge0$ (degree $18$).
+\end{lemma}
+\begin{proof}\leanok
+Each is proved by the shift $s=1+u$, after which every coefficient is nonnegative
+and the constant term positive (\texttt{nlinarith}).
+\end{proof}
+
+\begin{lemma}[Square-root-free core]\label{lem:G}
+\lean{hard_G_nonneg_6_4}\leanok
+\uses{lem:c4, lem:H23}
+For $s\ge1$ and all real $w$, $G(s,w)\ge0$, via the closed-form Positivstellensatz
+identity
 \[
   4\,c_4\,H_2\,G \;=\; H_2\,(2c_4w^2+c_3w)^2 \;+\; (H_2w+2c_4c_1)^2 \;+\; 4\,c_4\,H_3,
 \]
-where $c_4=3s^4+6s^2-1>0$, the Schur complements $H_2>0$ and $H_3\ge0$ are each
-proved by the shift $s=1+u$ (all coefficients then nonnegative). This replaces the
-failed \texttt{nlinarith} search by an exact \texttt{ring} identity plus three
-one-variable positivity lemmas (\texttt{hard\_c4\_pos}, \texttt{hard\_H2\_pos},
-\texttt{hard\_H3\_nonneg}). The hypothesis $r>137$ in \texttt{question} turns out to
-be unnecessary: \texttt{phiBar 91 137} is a global supersolution vanishing on
-$\{b\ge r+137\sqrt r\}$, so $e(r,b)=0$ holds there for all $r,b$.
+with $c_4=3s^4+6s^2-1>0$, $H_2>0$, $H_3\ge0$.
+\end{lemma}
+\begin{proof}\leanok
+The displayed identity is an exact \texttt{ring} identity; nonnegativity of the
+right-hand side follows from Lemmas~\ref{lem:c4}--\ref{lem:H23}, and dividing by
+$4c_4H_2>0$ gives $G\ge0$.
+\end{proof}
+
+\begin{lemma}[Layer inequality at $(6,4)$]\label{lem:layercore}
+\lean{layer_core_6_4}\leanok
+\uses{lem:G}
+The layer inequality (L) holds for $K=6$, $c=4$.
+\end{lemma}
+\begin{proof}\leanok
+Combine $G\ge0$ (Lemma~\ref{lem:G}) with the sign facts $A,B_{+}\ge0$, $t\ge0$ to
+remove the square root, then rewrite $A-tB_{+}$ into the (L) form via $t^2=s^2+1$.
+\end{proof}
+
+\begin{theorem}[$\varphi_{6,4}$ is a supersolution]\label{thm:super_6_4}
+\lean{phiBar_isSupersolution_6_4}\leanok
+\uses{thm:general, lem:layercore}
+$\varphi_{6,4}$ is a supersolution.
+\end{theorem}
+\begin{proof}\leanok
+Apply Theorem~\ref{thm:general} with the four side-conditions checked numerically
+and the layer inequality supplied by Lemma~\ref{lem:layercore}.
+\end{proof}
+
+Chaining Theorem~\ref{thm:super_6_4} $\to$ Proposition~\ref{prop:comparison} and
+evaluating $\varphi_{6,4}$ in the far field gives Theorem~\ref{thm:question}: for
+$b>r+4\sqrt r$ we have $0\le e(r,b)\le\varphi_{6,4}(r,b)=0$. The whole chain compiles
+with no \texttt{sorry}.
