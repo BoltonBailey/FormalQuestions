@@ -56,7 +56,6 @@ theorem sub_le_e (n m : ℕ) : n - m ≤ e n m := by
       simp only [e]
       apply le_trans _ (le_max_right 0 _)
       have hn := ih (m + 1)
-      have hm := ihm
       push_cast at *
       have h1 : (0 : ℚ) ≤ (n + 1) / (n + m + 2) := by positivity
       have h2 : (0 : ℚ) ≤ (m + 1) / (n + m + 2) := by positivity
@@ -80,28 +79,24 @@ theorem zero_le_e (n m : ℕ) : 0 ≤ e n m := by
   | zero => simp [e]
   | succ n ih =>
     induction m with
-    | zero => simp [e]; positivity
+    | zero => simp only [e]; positivity
     | succ m ihm =>
       simp only [e]
-      linarith [le_max_left (α := ℚ) 0
-        (((↑n + 1) / (↑n + ↑m + 2)) * (e n (m + 1) + 1) +
-         ((↑m + 1) / (↑n + ↑m + 2)) * (e (n + 1) m - 1))]
+      exact le_max_left _ _
 
 
 /--
 For a deck with a positive equal amount of cards of each color, the expected payoff is strictly positive.
 -/
 theorem e_pos_of_pos (n : ℕ) (hn : 0 < n) : 0 < e n n := by
-  cases n with
-  | zero => exact absurd hn (lt_irrefl 0)
-  | succ k =>
-    simp only [e]
-    apply lt_of_lt_of_le _ (le_max_right 0 _)
-    have h1 : (0 : ℚ) ≤ e k (k + 1) := zero_le_e k (k + 1)
-    have h2 : (1 : ℚ) ≤ e (k + 1) k := by
-      have := sub_le_e (k + 1) k; push_cast at this; linarith
-    have hcoeff : (k + 1 : ℚ) / (↑k + ↑k + 2) = 1 / 2 := by field_simp; ring
-    rw [hcoeff]; nlinarith
+  obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hn.ne'
+  simp only [e]
+  apply lt_of_lt_of_le _ (le_max_right 0 _)
+  have h1 : (0 : ℚ) ≤ e k (k + 1) := zero_le_e k (k + 1)
+  have h2 : (1 : ℚ) ≤ e (k + 1) k := by
+    have := sub_le_e (k + 1) k; push_cast at this; linarith
+  have hcoeff : (k + 1 : ℚ) / (↑k + ↑k + 2) = 1 / 2 := by field_simp; ring
+  rw [hcoeff]; nlinarith
 
 /--
 For one deck with n red cards and m black cards, and another deck with m red cards and n black cards,
@@ -132,9 +127,8 @@ equity is exactly `0`. -/
 theorem e_eq_zero_of_inner_nonpos (r b : ℕ)
     (h : (r + 1) / (r + b + 2) * (e r (b + 1) + 1)
         + (b + 1) / (r + b + 2) * (e (r + 1) b - 1) ≤ 0) :
-    e (r + 1) (b + 1) = 0 := by
-  rw [e_succ_succ]
-  exact max_eq_left h
+    e (r + 1) (b + 1) = 0 :=
+  (e_succ_succ r b).trans (max_eq_left h)
 
 /-- A supersolution (blueprint `def:super`): a nonnegative real-valued function
 dominating the boundary data and satisfying the supersolution inequality, here
@@ -207,14 +201,6 @@ theorem phiBar_layer {K c : ℝ} {r b : ℕ}
     (h1 : ¬ (r : ℝ) + c * Real.sqrt r - b ≤ 0) (h2 : (r : ℝ) ≤ b) :
     phiBar K c r b = ((r : ℝ) + c * Real.sqrt r - b) ^ 2 / (K * Real.sqrt r) := by
   unfold phiBar; rw [if_neg h1, if_pos h2]
-
-/-! ### The parameter-free leading coefficient of the layer-core quartic -/
-
-/-- `3s⁴+6s²-1 > 0` for `s ≥ 1`: the `w⁴`-coefficient of the layer-core quartic `G`,
-which is independent of `K, c`. Closed by the `sos` tactic (run `sos?` to freeze the
-sum-of-squares certificate into a solver-free `sos_witness`). -/
-theorem hard_c4_pos {s : ℝ} (hs : 1 ≤ s) : 0 < 3*s^4 + 6*s^2 - 1 := by
-  sos
 
 /-! ## The general supersolution theorem
 
@@ -290,7 +276,7 @@ theorem phiBar_ss_bulk_of {K c : ℝ} (hK0 : 0 < K) (hc0 : 0 ≤ c) (r b : ℕ)
   push_cast
   have hKne : K ≠ 0 := ne_of_gt hK0
   have hnn : (0:ℝ) ≤ c ^ 2 * ((r:ℝ) + 1) * (Real.sqrt ((r:ℝ) + 1) - Real.sqrt (r:ℝ)) / K :=
-    div_nonneg (mul_nonneg (mul_nonneg (sq_nonneg c) (by positivity)) (by linarith [hs])) (le_of_lt hK0)
+    div_nonneg (mul_nonneg (by positivity) (by linarith [hs])) (le_of_lt hK0)
   have hid : ((r:ℝ) + 1 - ((b:ℝ) + 1) + c ^ 2 * Real.sqrt ((r:ℝ) + 1) / K) * ((r:ℝ) + (b:ℝ) + 2)
       - (((r:ℝ) + 1) * ((r:ℝ) - ((b:ℝ) + 1) + c ^ 2 * Real.sqrt (r:ℝ) / K + 1)
         + ((b:ℝ) + 1) * ((r:ℝ) + 1 - (b:ℝ) + c ^ 2 * Real.sqrt ((r:ℝ) + 1) / K - 1))
@@ -361,7 +347,7 @@ theorem phiBar_ss_far_of {K c : ℝ} (hK1 : 1 ≤ K) (hc1 : 1 ≤ c) (hcK1 : 1 �
 The genuinely parameter-dependent content is the hypothesis `hcore`, namely the
 square-root-cleared layer defect `0 ≤ F(s,t,bb-s²)`. -/
 theorem layer_div_ineq_of {K c s t rr bb : ℝ} (hK0 : 0 < K) (hs : 1 ≤ s) (ht0 : 0 < t)
-    (ht2 : t ^ 2 = s ^ 2 + 1) (hrr : rr = s ^ 2) (hN : 0 < rr + bb + 2)
+    (hrr : rr = s ^ 2) (hN : 0 < rr + bb + 2)
     (hcore : 0 ≤ s * (c * t - (bb - s ^ 2)) ^ 2 * (2 * s ^ 2 + (bb - s ^ 2) + 2)
         - (s ^ 2 + 1) * (t * (c * s - (bb - s ^ 2) - 1) ^ 2 + K * s * t)
         - (s ^ 2 + (bb - s ^ 2) + 1) * (s * (c * t - (bb - s ^ 2) + 1) ^ 2 - K * s * t)) :
@@ -432,7 +418,7 @@ theorem phiBar_ss_hard_of {K c : ℝ} (hK1 : 1 ≤ K) (hc1 : 1 ≤ c) (hK2c : K 
           = (3 * (b:ℝ) ^ 2 + (K - 4 * c + 1) * (b:ℝ) + (c ^ 2 - 2 * c - 1)) / (K * ((b:ℝ) + 2)) from by
         field_simp; ring]
       apply div_nonneg
-      · nlinarith [sq_nonneg (6 * (b:ℝ) + (K - 4 * c + 1)), hr0]
+      · sos
       · positivity
     exact le_trans (by gcongr) hLD0
   · -- `r ≥ 1`
@@ -492,7 +478,7 @@ theorem phiBar_ss_hard_of {K c : ℝ} (hK1 : 1 ≤ K) (hc1 : 1 ≤ c) (hK2c : K 
       have hcore := hlayer (Real.sqrt r) (Real.sqrt ((r:ℝ) + 1)) ((b:ℝ) - Real.sqrt (r:ℝ) ^ 2)
         hs1 (by rw [hsq]; linarith) ht0.le ht2
       have hLD := layer_div_ineq_of (K := K) (c := c) (s := Real.sqrt r)
-        (t := Real.sqrt ((r:ℝ) + 1)) (rr := (r:ℝ)) (bb := (b:ℝ)) hK0 hs1 ht0 ht2 hsq.symm
+        (t := Real.sqrt ((r:ℝ) + 1)) (rr := (r:ℝ)) (bb := (b:ℝ)) hK0 hs1 ht0 hsq.symm
         (by positivity) hcore
       rw [hpC]
       push_cast at hpA hpB ⊢
@@ -540,15 +526,10 @@ theorem phiBar_isSupersolution_of {K c : ℝ} (hK1 : 1 ≤ K) (hc1 : 1 ≤ c) (h
     · exact le_rfl
     · positivity
     · have hpos : (0 : ℝ) ≤ (c ^ 2 / K) * Real.sqrt r := by positivity
-      have hbr : (b : ℝ) ≤ r := le_of_lt (not_le.mp h2)
       linarith
   case zero_left =>
     intro b
-    have hD : (↑(0 : ℕ) : ℝ) + c * Real.sqrt ↑(0 : ℕ) - (b : ℝ) ≤ 0 := by
-      simp only [Nat.cast_zero, Real.sqrt_zero, mul_zero, zero_add, zero_sub, Left.neg_nonpos_iff]
-      positivity
-    unfold phiBar
-    rw [if_pos hD]
+    simp [phiBar]
   case base =>
     intro r
     unfold phiBar
@@ -568,46 +549,20 @@ theorem phiBar_isSupersolution_of {K c : ℝ} (hK1 : 1 ≤ K) (hc1 : 1 ≤ c) (h
 
 /-! ### The concrete instance `(K,c) = (6,4)`
 
-The layer certificate: `c₄ = 3s⁴+6s²-1` is parameter-free (`hard_c4_pos`), and the
-two Schur complements `H₂`, `H₃` are degree-10 / degree-18 polynomials, both with
-nonnegative coefficients after the shift `s = 1+u`. Feeding the resulting
+The layer certificate: `G(s,w) = A² − (s²+1)·B²` is a degree-8 bivariate
+polynomial (the `w`-degree-10 leading terms of `A²` and `(s²+1)B²` cancel),
+non-negative on `s ≥ 1`, discharged in one `sos` call. The Putinar certificate
+`G = σ₀ + σ₁·(s−1)` needs the Newton-pruned σ-bases (`w`-degree ≤ 2): the dense
+bases carry `w³`/`w⁴` rows whose Grams are structurally rank-deficient, which
+CSDP tolerates but exact rational rounding does not. Feeding the resulting
 `layer_core_6_4` to the general theorem yields `IsSupersolution (phiBar 6 4)`. -/
 
-theorem hard_H2_pos_6_4 {s : ℝ} (hs : 1 ≤ s) :
-    0 < 704*s^10 - 80*s^9 + 2596*s^8 - 400*s^7 + 2580*s^6 - 560*s^5 + 324*s^4
-      - 240*s^3 - 356*s^2 + 8 := by
-  obtain ⟨u, hu, rfl⟩ : ∃ u, 0 ≤ u ∧ s = 1 + u := ⟨s - 1, by linarith, by ring⟩
-  nlinarith [hu, pow_nonneg hu 2, pow_nonneg hu 3, pow_nonneg hu 4, pow_nonneg hu 5,
-    pow_nonneg hu 6, pow_nonneg hu 7, pow_nonneg hu 8, pow_nonneg hu 9, pow_nonneg hu 10]
-
-theorem hard_H3_nonneg_6_4 {s : ℝ} (hs : 1 ≤ s) :
-    0 ≤ 122880*s^18 - 30720*s^17 + 823872*s^16 - 216768*s^15 + 2188976*s^14
-      - 605024*s^13 + 2904272*s^12 - 866912*s^11 + 1905652*s^10 - 676576*s^9
-      + 405640*s^8 - 272064*s^7 - 148248*s^6 - 42464*s^5 - 62368*s^4 + 992*s^3
-      + 2164*s^2 + 32*s + 8 := by
-  obtain ⟨u, hu, rfl⟩ : ∃ u, 0 ≤ u ∧ s = 1 + u := ⟨s - 1, by linarith, by ring⟩
-  nlinarith [hu, pow_nonneg hu 2, pow_nonneg hu 3, pow_nonneg hu 4, pow_nonneg hu 5,
-    pow_nonneg hu 6, pow_nonneg hu 7, pow_nonneg hu 8, pow_nonneg hu 9, pow_nonneg hu 10,
-    pow_nonneg hu 11, pow_nonneg hu 12, pow_nonneg hu 13, pow_nonneg hu 14, pow_nonneg hu 15,
-    pow_nonneg hu 16, pow_nonneg hu 17, pow_nonneg hu 18]
-
+set_option maxHeartbeats 2000000 in
+-- one degree-8 bivariate `sos` solve (a ~35-equation SDP) overruns the default budget
 theorem hard_G_nonneg_6_4 {s w : ℝ} (hs : 1 ≤ s) :
     0 ≤ (16*s^5 + 31*s^3 + 15*s + w^2*(s^3+3*s) + w*(2*s^3+s))^2
       - (s^2+1)*(16*s^4 + 17*s^2 + w^2*(s^2+1) + w*(2*s^2+2*s+2) + 1)^2 := by
-  have hc4 : 0 < 3*s^4 + 6*s^2 - 1 := hard_c4_pos hs
-  have hH2 : 0 < 704*s^10 - 80*s^9 + 2596*s^8 - 400*s^7 + 2580*s^6 - 560*s^5 + 324*s^4
-      - 240*s^3 - 356*s^2 + 8 := hard_H2_pos_6_4 hs
-  have hH3 : 0 ≤ 122880*s^18 - 30720*s^17 + 823872*s^16 - 216768*s^15 + 2188976*s^14
-      - 605024*s^13 + 2904272*s^12 - 866912*s^11 + 1905652*s^10 - 676576*s^9
-      + 405640*s^8 - 272064*s^7 - 148248*s^6 - 42464*s^5 - 62368*s^4 + 992*s^3
-      + 2164*s^2 + 32*s + 8 := hard_H3_nonneg_6_4 hs
-  nlinarith [mul_nonneg hH2.le (sq_nonneg (2*(3*s^4+6*s^2-1)*w^2
-      + (-4*s^5 + 2*s^4 - 8*s^3 - 6*s^2 - 4*s - 4)*w)),
-    sq_nonneg ((704*s^10 - 80*s^9 + 2596*s^8 - 400*s^7 + 2580*s^6 - 560*s^5 + 324*s^4
-        - 240*s^3 - 356*s^2 + 8)*w
-      + 2*(3*s^4+6*s^2-1)*(-64*s^7 - 40*s^6 - 132*s^5 - 82*s^4 - 72*s^3 - 46*s^2 - 4*s - 4)),
-    mul_nonneg (by linarith : (0:ℝ) ≤ 4*(3*s^4+6*s^2-1)) hH3,
-    mul_pos (by linarith : (0:ℝ) < 4*(3*s^4+6*s^2-1)) hH2]
+  sos
 
 /-- Layer inequality for `(K,c) = (6,4)`: removes the square root from
 `hard_G_nonneg_6_4`, exactly as `layer_core` does for `(91,137)`. -/
@@ -616,6 +571,7 @@ theorem layer_core_6_4 {s t w : ℝ} (hs : 1 ≤ s) (hw : 0 ≤ w) (ht0 : 0 ≤ 
     0 ≤ s * (4*t - w) ^ 2 * (2*s^2 + w + 2)
         - (s^2 + 1) * (t * (4*s - w - 1) ^ 2 + 6*s*t)
         - (s^2 + w + 1) * (s * (4*t - w + 1) ^ 2 - 6*s*t) := by
+  -- sos -- sos: search failed to find a certificate
   have h0s : (0:ℝ) ≤ s := by linarith
   have hG := hard_G_nonneg_6_4 (w := w) hs
   have hA : 0 ≤ 16*s^5 + 31*s^3 + 15*s + w^2*(s^3+3*s) + w*(2*s^3+s) := by

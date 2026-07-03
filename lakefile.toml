@@ -31,7 +31,7 @@ rev = "v4.30.0"
 [[require]]
 name = "sos"
 git = "https://github.com/BoltonBailey/sos.git"
-rev = "bump-toolchain-v4.30.0"
+rev = "newton-prune-multiplier-blocks"
 
 [[lean_lib]]
 name = "FormalQuestions"

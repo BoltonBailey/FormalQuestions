@@ -269,28 +269,8 @@ $s=\sqrt r$, $t=\sqrt{r+1}$ ($t^2=s^2+1$), $w=b-r$, (L) has the shape $A-tB_{+}$
 $A,B_{+}\ge0$, hence is equivalent to the square-root-free $A^2\ge(s^2+1)B_{+}^2$,
 i.e. $G(s,w)\ge0$.
 
-\begin{lemma}[Leading coefficient]\label{lem:c4}
-\lean{hard_c4_pos}\leanok
-$3s^4+6s^2-1>0$ for $s\ge1$. This is the $w^4$-coefficient of $G$, and it is
-\emph{independent} of $K,c$.
-\end{lemma}
-\begin{proof}\leanok
-Closed by the \texttt{sos} tactic (a sum-of-squares / Positivstellensatz search).
-\end{proof}
-
-\begin{lemma}[Schur complements]\label{lem:H23}
-\lean{hard_H2_pos_6_4, hard_H3_nonneg_6_4}\leanok
-For $s\ge1$ the two Schur-complement polynomials of $G$'s $[w^2,w,1]$ quadratic form
-are positive/nonnegative: $H_2(s)>0$ (degree $10$) and $H_3(s)\ge0$ (degree $18$).
-\end{lemma}
-\begin{proof}\leanok
-Each is proved by the shift $s=1+u$, after which every coefficient is nonnegative
-and the constant term positive (\texttt{nlinarith}).
-\end{proof}
-
 \begin{lemma}[Square-root-free core]\label{lem:G}
 \lean{hard_G_nonneg_6_4}\leanok
-\uses{lem:c4, lem:H23}
 For $s\ge1$ and all real $w$, $G(s,w)\ge0$, via the closed-form Positivstellensatz
 identity
 \[
@@ -300,7 +280,8 @@ with $c_4=3s^4+6s^2-1>0$, $H_2>0$, $H_3\ge0$.
 \end{lemma}
 \begin{proof}\leanok
 The displayed identity is an exact \texttt{ring} identity; nonnegativity of the
-right-hand side follows from Lemmas~\ref{lem:c4}--\ref{lem:H23}, and dividing by
+right-hand side follows from the sign facts $c_4>0$, $H_2>0$, $H_3\ge0$ (each a
+polynomial inequality in $s$, discharged inline by \texttt{sos}), and dividing by
 $4c_4H_2>0$ gives $G\ge0$.
 \end{proof}
 
