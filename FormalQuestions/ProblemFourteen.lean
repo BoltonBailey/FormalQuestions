@@ -71,7 +71,8 @@ theorem sub_le_e (n m : ℕ) : n - m ≤ e n m := by
             apply add_le_add <;> apply mul_le_mul_of_nonneg_left _ ‹_› <;> linarith
 
 /--
-For one deck with n red cards and m black cards, and another deck with m red cards and n black cards,
+For one deck with n red cards and m black cards,
+and another deck with m red cards and n black cards,
 the total expected payoff is positive.
 -/
 theorem zero_le_e (n m : ℕ) : 0 ≤ e n m := by
@@ -86,7 +87,8 @@ theorem zero_le_e (n m : ℕ) : 0 ≤ e n m := by
 
 
 /--
-For a deck with a positive equal amount of cards of each color, the expected payoff is strictly positive.
+For a deck with a positive equal amount of cards of each color,
+the expected payoff is strictly positive.
 -/
 theorem e_pos_of_pos (n : ℕ) (hn : 0 < n) : 0 < e n n := by
   obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hn.ne'
@@ -99,7 +101,8 @@ theorem e_pos_of_pos (n : ℕ) (hn : 0 < n) : 0 < e n n := by
   rw [hcoeff]; nlinarith
 
 /--
-For one deck with n red cards and m black cards, and another deck with m red cards and n black cards,
+For one deck with n red cards and m black cards,
+and another deck with m red cards and n black cards,
 the total expected payoff is positive.
 -/
 theorem pos_e_swap_add (n m : ℕ) (hn : 0 < n + m) : 0 < e n m + e m n := by
@@ -297,7 +300,8 @@ theorem phiBar_ss_far_of {K c : ℝ} (hK1 : 1 ≤ K) (hc1 : 1 ≤ c) (hcK1 : 1 �
   have hc0 : (0 : ℝ) ≤ c := by linarith
   have hs01 : Real.sqrt (r : ℝ) ≤ Real.sqrt ((r : ℝ) + 1) := Real.sqrt_le_sqrt (by linarith)
   have ht1 : (1 : ℝ) ≤ Real.sqrt ((r : ℝ) + 1) := by
-    have h := Real.sqrt_le_sqrt (show (1 : ℝ) ≤ (r : ℝ) + 1 by linarith [Nat.cast_nonneg (α := ℝ) r])
+    have h := Real.sqrt_le_sqrt
+      (show (1 : ℝ) ≤ (r : ℝ) + 1 by linarith [Nat.cast_nonneg (α := ℝ) r])
     rwa [Real.sqrt_one] at h
   have htsq : Real.sqrt ((r : ℝ) + 1) ^ 2 = (r : ℝ) + 1 :=
     Real.sq_sqrt (by linarith [Nat.cast_nonneg (α := ℝ) r])
@@ -306,7 +310,8 @@ theorem phiBar_ss_far_of {K c : ℝ} (hK1 : 1 ≤ K) (hc1 : 1 ≤ c) (hcK1 : 1 �
   have hC : phiBar K c (r + 1) (b + 1) = 0 := phiBar_far hfar
   have hA0 : (↑r : ℝ) + c * Real.sqrt ↑r - ↑(b + 1) ≤ 0 := by
     push_cast
-    nlinarith [hfar', mul_nonneg hc0 (by linarith [hs01] : (0:ℝ) ≤ Real.sqrt ((r:ℝ)+1) - Real.sqrt r)]
+    nlinarith [hfar',
+      mul_nonneg hc0 (by linarith [hs01] : (0:ℝ) ≤ Real.sqrt ((r:ℝ)+1) - Real.sqrt r)]
   have hA : phiBar K c r (b + 1) = 0 := phiBar_far hA0
   have hbge : (r : ℝ) ≤ b := by
     nlinarith [hfar', mul_nonneg hc0 (Real.sqrt_nonneg ((r:ℝ)+1))]
