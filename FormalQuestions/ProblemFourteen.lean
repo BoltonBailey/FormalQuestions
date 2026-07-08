@@ -1,5 +1,4 @@
 import Mathlib
-import SOS
 
 /-!
 
@@ -423,7 +422,7 @@ theorem phiBar_ss_hard_of {K c : ℝ} (hK1 : 1 ≤ K) (hc1 : 1 ≤ c) (hK2c : K 
           = (3 * (b:ℝ) ^ 2 + (K - 4 * c + 1) * (b:ℝ) + (c ^ 2 - 2 * c - 1)) / (K * ((b:ℝ) + 2)) from by
         field_simp; ring]
       apply div_nonneg
-      · sos
+      · nlinarith [sq_nonneg (6 * (b:ℝ) + (K - 4 * c + 1)), hr0]
       · positivity
     exact le_trans (by gcongr) hLD0
   · -- `r ≥ 1`
@@ -554,20 +553,102 @@ theorem phiBar_isSupersolution_of {K c : ℝ} (hK1 : 1 ≤ K) (hc1 : 1 ≤ c) (h
 
 /-! ### The concrete instance `(K,c) = (6,4)`
 
-The layer certificate: `G(s,w) = A² − (s²+1)·B²` is a degree-8 bivariate
-polynomial (the `w`-degree-10 leading terms of `A²` and `(s²+1)B²` cancel),
-non-negative on `s ≥ 1`, discharged in one `sos` call. The Putinar certificate
-`G = σ₀ + σ₁·(s−1)` needs the Newton-pruned σ-bases (`w`-degree ≤ 2): the dense
-bases carry `w³`/`w⁴` rows whose Grams are structurally rank-deficient, which
-CSDP tolerates but exact rational rounding does not. Feeding the resulting
-`layer_core_6_4` to the general theorem yields `IsSupersolution (phiBar 6 4)`. -/
+The layer certificate: `G(s,w) = A² − (s²+1)·B²` is a bivariate polynomial (the
+`w`-degree-8 leading terms of `A²` and `(s²+1)B²` cancel, so `G` is a quartic in
+`w`), non-negative on `s ≥ 1`. Viewing `G = c₄w⁴+c₃w³+c₂w²+c₁w+c₀` as a quartic
+in `w`, the completing-the-square (Schur-complement) identity
 
-set_option maxHeartbeats 2000000 in
--- one degree-8 bivariate `sos` solve (a ~35-equation SDP) overruns the default budget
+  `4·c₄·H₂·G = H₂·(2c₄w²+c₃w)² + (H₂w+2c₄c₁)² + 4c₄·H₃`,   with
+  `H₂ = 4c₄c₂ − c₃²`,  `H₃ = c₀·H₂ − c₄·c₁²`,
+
+exhibits `G` as nonnegative once `c₄ > 0`, `H₂ > 0`, `H₃ ≥ 0` on `s ≥ 1`. Each of
+those three is a univariate polynomial in `s` all of whose coefficients are
+nonnegative after the shift `s = 1 + u` (`u ≥ 0`), so `nlinarith` discharges them.
+Feeding the resulting `layer_core_6_4` to the general theorem yields
+`IsSupersolution (phiBar 6 4)`. -/
+
+/-- The leading `w⁴`-coefficient `c₄ = 3s⁴+6s²−1 > 0` for `s ≥ 1`. -/
+theorem hard_c4_pos_6_4 {s : ℝ} (hs : 1 ≤ s) : 0 < 3*s^4 + 6*s^2 - 1 := by
+  nlinarith [hs, sq_nonneg s, sq_nonneg (s^2 - 1)]
+
+/-- First Schur complement `H₂ = 4c₄c₂ − c₃² > 0` for `s ≥ 1`. After `s = 1+u`
+(`u ≥ 0`) every coefficient is nonnegative with positive constant term. -/
+theorem hard_H2_pos_6_4 {s : ℝ} (hs : 1 ≤ s) :
+    0 < 704*s^10 - 80*s^9 + 2596*s^8 - 400*s^7 + 2580*s^6 - 560*s^5 + 324*s^4
+      - 240*s^3 - 356*s^2 + 8 := by
+  obtain ⟨u, hu, rfl⟩ : ∃ u, 0 ≤ u ∧ s = 1 + u := ⟨s - 1, by linarith, by ring⟩
+  nlinarith [hu, pow_nonneg hu 2, pow_nonneg hu 3, pow_nonneg hu 4, pow_nonneg hu 5,
+    pow_nonneg hu 6, pow_nonneg hu 7, pow_nonneg hu 8, pow_nonneg hu 9, pow_nonneg hu 10]
+
+/-- Second Schur complement `H₃ = c₀·H₂ − c₄·c₁² ≥ 0` for `s ≥ 1`. -/
+theorem hard_H3_nonneg_6_4 {s : ℝ} (hs : 1 ≤ s) :
+    0 ≤ 122880*s^18 - 30720*s^17 + 823872*s^16 - 216768*s^15 + 2188976*s^14
+      - 605024*s^13 + 2904272*s^12 - 866912*s^11 + 1905652*s^10 - 676576*s^9
+      + 405640*s^8 - 272064*s^7 - 148248*s^6 - 42464*s^5 - 62368*s^4 + 992*s^3
+      + 2164*s^2 + 32*s + 8 := by
+  obtain ⟨u, hu, rfl⟩ : ∃ u, 0 ≤ u ∧ s = 1 + u := ⟨s - 1, by linarith, by ring⟩
+  nlinarith [hu, pow_nonneg hu 2, pow_nonneg hu 3, pow_nonneg hu 4, pow_nonneg hu 5,
+    pow_nonneg hu 6, pow_nonneg hu 7, pow_nonneg hu 8, pow_nonneg hu 9, pow_nonneg hu 10,
+    pow_nonneg hu 11, pow_nonneg hu 12, pow_nonneg hu 13, pow_nonneg hu 14, pow_nonneg hu 15,
+    pow_nonneg hu 16, pow_nonneg hu 17, pow_nonneg hu 18]
+
+/-- The square-root-free polynomial core `G = A² − (s²+1)·B² ≥ 0` for `s ≥ 1`,
+all real `w`. Proved by the completing-the-square (Schur-complement) certificate
+`4·c₄·H₂·G = H₂·(2c₄w²+c₃w)² + (H₂w+2c₄c₁)² + 4c₄·H₃` with `c₄ > 0`, `H₂ > 0`,
+`H₃ ≥ 0`. -/
 theorem hard_G_nonneg_6_4 {s w : ℝ} (hs : 1 ≤ s) :
     0 ≤ (16*s^5 + 31*s^3 + 15*s + w^2*(s^3+3*s) + w*(2*s^3+s))^2
       - (s^2+1)*(16*s^4 + 17*s^2 + w^2*(s^2+1) + w*(2*s^2+2*s+2) + 1)^2 := by
-  sos
+  have hc4 : 0 < 3*s^4 + 6*s^2 - 1 := hard_c4_pos_6_4 hs
+  have hH2 : 0 < 704*s^10 - 80*s^9 + 2596*s^8 - 400*s^7 + 2580*s^6 - 560*s^5 + 324*s^4
+      - 240*s^3 - 356*s^2 + 8 := hard_H2_pos_6_4 hs
+  have hH3 : 0 ≤ 122880*s^18 - 30720*s^17 + 823872*s^16 - 216768*s^15 + 2188976*s^14
+      - 605024*s^13 + 2904272*s^12 - 866912*s^11 + 1905652*s^10 - 676576*s^9
+      + 405640*s^8 - 272064*s^7 - 148248*s^6 - 42464*s^5 - 62368*s^4 + 992*s^3
+      + 2164*s^2 + 32*s + 8 := hard_H3_nonneg_6_4 hs
+  have key : 4*(3*s^4 + 6*s^2 - 1)*(704*s^10 - 80*s^9 + 2596*s^8 - 400*s^7 + 2580*s^6
+      - 560*s^5 + 324*s^4 - 240*s^3 - 356*s^2 + 8)
+      * ((16*s^5 + 31*s^3 + 15*s + w^2*(s^3+3*s) + w*(2*s^3+s))^2
+        - (s^2+1)*(16*s^4 + 17*s^2 + w^2*(s^2+1) + w*(2*s^2+2*s+2) + 1)^2)
+      = (704*s^10 - 80*s^9 + 2596*s^8 - 400*s^7 + 2580*s^6 - 560*s^5 + 324*s^4
+          - 240*s^3 - 356*s^2 + 8)
+        * (-4*s^5*w + 6*s^4*w^2 + 2*s^4*w - 8*s^3*w + 12*s^2*w^2 - 6*s^2*w - 4*s*w
+            - 2*w^2 - 4*w)^2
+      + (-384*s^11 + 704*s^10*w - 240*s^10 - 80*s^9*w - 1560*s^9 + 2596*s^8*w - 972*s^8
+          - 400*s^7*w - 1888*s^7 + 2580*s^6*w - 1180*s^6 - 560*s^5*w - 624*s^5
+          + 324*s^4*w - 412*s^4 - 240*s^3*w + 96*s^3 - 356*s^2*w + 44*s^2 + 8*s + 8*w + 8)^2
+      + 4*(3*s^4 + 6*s^2 - 1)*(122880*s^18 - 30720*s^17 + 823872*s^16 - 216768*s^15
+          + 2188976*s^14 - 605024*s^13 + 2904272*s^12 - 866912*s^11 + 1905652*s^10
+          - 676576*s^9 + 405640*s^8 - 272064*s^7 - 148248*s^6 - 42464*s^5 - 62368*s^4
+          + 992*s^3 + 2164*s^2 + 32*s + 8) := by
+    ring
+  have hrhs : 0 ≤ (704*s^10 - 80*s^9 + 2596*s^8 - 400*s^7 + 2580*s^6 - 560*s^5 + 324*s^4
+          - 240*s^3 - 356*s^2 + 8)
+        * (-4*s^5*w + 6*s^4*w^2 + 2*s^4*w - 8*s^3*w + 12*s^2*w^2 - 6*s^2*w - 4*s*w
+            - 2*w^2 - 4*w)^2
+      + (-384*s^11 + 704*s^10*w - 240*s^10 - 80*s^9*w - 1560*s^9 + 2596*s^8*w - 972*s^8
+          - 400*s^7*w - 1888*s^7 + 2580*s^6*w - 1180*s^6 - 560*s^5*w - 624*s^5
+          + 324*s^4*w - 412*s^4 - 240*s^3*w + 96*s^3 - 356*s^2*w + 44*s^2 + 8*s + 8*w + 8)^2
+      + 4*(3*s^4 + 6*s^2 - 1)*(122880*s^18 - 30720*s^17 + 823872*s^16 - 216768*s^15
+          + 2188976*s^14 - 605024*s^13 + 2904272*s^12 - 866912*s^11 + 1905652*s^10
+          - 676576*s^9 + 405640*s^8 - 272064*s^7 - 148248*s^6 - 42464*s^5 - 62368*s^4
+          + 992*s^3 + 2164*s^2 + 32*s + 8) := by
+    have a1 := mul_nonneg hH2.le (sq_nonneg (-4*s^5*w + 6*s^4*w^2 + 2*s^4*w - 8*s^3*w
+      + 12*s^2*w^2 - 6*s^2*w - 4*s*w - 2*w^2 - 4*w))
+    have a2 := sq_nonneg (-384*s^11 + 704*s^10*w - 240*s^10 - 80*s^9*w - 1560*s^9
+      + 2596*s^8*w - 972*s^8 - 400*s^7*w - 1888*s^7 + 2580*s^6*w - 1180*s^6 - 560*s^5*w
+      - 624*s^5 + 324*s^4*w - 412*s^4 - 240*s^3*w + 96*s^3 - 356*s^2*w + 44*s^2 + 8*s
+      + 8*w + 8)
+    have a3 := mul_nonneg (by linarith : (0:ℝ) ≤ 4*(3*s^4 + 6*s^2 - 1)) hH3
+    linarith
+  have h4 : 0 < 4*(3*s^4 + 6*s^2 - 1)*(704*s^10 - 80*s^9 + 2596*s^8 - 400*s^7 + 2580*s^6
+      - 560*s^5 + 324*s^4 - 240*s^3 - 356*s^2 + 8) := mul_pos (by linarith) hH2
+  have hprod : 0 ≤ 4*(3*s^4 + 6*s^2 - 1)*(704*s^10 - 80*s^9 + 2596*s^8 - 400*s^7 + 2580*s^6
+      - 560*s^5 + 324*s^4 - 240*s^3 - 356*s^2 + 8)
+      * ((16*s^5 + 31*s^3 + 15*s + w^2*(s^3+3*s) + w*(2*s^3+s))^2
+        - (s^2+1)*(16*s^4 + 17*s^2 + w^2*(s^2+1) + w*(2*s^2+2*s+2) + 1)^2) := by
+    rw [key]; exact hrhs
+  exact (mul_nonneg_iff_of_pos_left h4).mp hprod
 
 /-- Layer inequality for `(K,c) = (6,4)`: removes the square root from
 `hard_G_nonneg_6_4`, exactly as `layer_core` does for `(91,137)`. -/

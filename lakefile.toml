@@ -28,10 +28,5 @@ name = "doc-gen4"
 git = "https://github.com/leanprover/doc-gen4.git"
 rev = "v4.30.0"
 
-[[require]]
-name = "sos"
-git = "https://github.com/BoltonBailey/sos.git"
-rev = "newton-prune-multiplier-blocks"
-
 [[lean_lib]]
 name = "FormalQuestions"

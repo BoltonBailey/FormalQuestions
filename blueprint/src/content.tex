@@ -281,8 +281,9 @@ with $c_4=3s^4+6s^2-1>0$, $H_2>0$, $H_3\ge0$.
 \begin{proof}\leanok
 The displayed identity is an exact \texttt{ring} identity; nonnegativity of the
 right-hand side follows from the sign facts $c_4>0$, $H_2>0$, $H_3\ge0$ (each a
-polynomial inequality in $s$, discharged inline by \texttt{sos}), and dividing by
-$4c_4H_2>0$ gives $G\ge0$.
+univariate polynomial inequality in $s$ whose coefficients are all nonnegative
+after the shift $s=1+u$, $u\ge0$, discharged by \texttt{nlinarith}), and dividing
+by $4c_4H_2>0$ gives $G\ge0$.
 \end{proof}
 
 \begin{lemma}[Layer inequality at $(6,4)$]\label{lem:layercore}
