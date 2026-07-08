@@ -179,6 +179,71 @@ theorem e_le_of_supersolution {φ : ℕ → ℕ → ℝ} (hφ : IsSupersolution 
   intro r b
   exact H (r + b) r b rfl
 
+/-- A subsolution: the dual of `IsSupersolution`, used to obtain *lower* bounds on
+the equity `e`. No nonnegativity is imposed; the boundary data is bounded *above*
+(`ψ(0,b) ≤ 0 = e(0,b)` and `ψ(r,0) ≤ r = e(r,0)`) and the supersolution inequality
+is reversed. Because `e = max 0 (…)`, no `max` is needed here: it suffices that `ψ`
+lies below its own "continue value". -/
+structure IsSubsolution (ψ : ℕ → ℕ → ℝ) : Prop where
+  zero_left : ∀ b, ψ 0 b ≤ 0
+  base : ∀ r : ℕ, ψ r 0 ≤ r
+  ss : ∀ r b : ℕ,
+    ψ (r + 1) (b + 1) ≤
+      (r + 1) / (r + b + 2) * (ψ r (b + 1) + 1)
+        + (b + 1) / (r + b + 2) * (ψ (r + 1) b - 1)
+
+/-- Dual comparison principle: any subsolution `ψ` is dominated by the equity `e`
+(compared after casting `e` into `ℝ`). Strong induction on `r + b`, mirroring
+`e_le_of_supersolution`. -/
+theorem e_ge_of_subsolution {ψ : ℕ → ℕ → ℝ} (hψ : IsSubsolution ψ) :
+    ∀ r b, ψ r b ≤ (e r b : ℝ) := by
+  have H : ∀ n r b, r + b = n → ψ r b ≤ (e r b : ℝ) := by
+    intro n
+    induction n using Nat.strong_induction_on with
+    | _ n ih =>
+      intro r b hrb
+      cases r with
+      | zero =>
+        have he : (e 0 b : ℝ) = 0 := by simp [e]
+        rw [he]; exact hψ.zero_left b
+      | succ r =>
+        cases b with
+        | zero =>
+          have he : (e (r + 1) 0 : ℝ) = ((r + 1 : ℕ) : ℝ) := by simp [e]
+          rw [he]; exact_mod_cast hψ.base (r + 1)
+        | succ b =>
+          rw [e_succ_succ, Rat.cast_max, Rat.cast_zero]
+          push_cast
+          refine le_trans ?_ (le_max_right _ _)
+          have h1 : ψ r (b + 1) ≤ (e r (b + 1) : ℝ) :=
+            ih (r + (b + 1)) (by omega) r (b + 1) rfl
+          have h2 : ψ (r + 1) b ≤ (e (r + 1) b : ℝ) :=
+            ih ((r + 1) + b) (by omega) (r + 1) b rfl
+          have hc1 : (0 : ℝ) ≤ (r + 1) / (r + b + 2) := by positivity
+          have hc2 : (0 : ℝ) ≤ (b + 1) / (r + b + 2) := by positivity
+          have f1 : (r + 1) / (r + b + 2) * (ψ r (b + 1) + 1)
+              ≤ (r + 1) / (r + b + 2) * ((e r (b + 1) : ℝ) + 1) :=
+            mul_le_mul_of_nonneg_left (by linarith) hc1
+          have f2 : (b + 1) / (r + b + 2) * (ψ (r + 1) b - 1)
+              ≤ (b + 1) / (r + b + 2) * ((e (r + 1) b : ℝ) - 1) :=
+            mul_le_mul_of_nonneg_left (by linarith) hc2
+          linarith [hψ.ss r b]
+  intro r b
+  exact H (r + b) r b rfl
+
+/-- The linear subsolution `ψ(r,b) = r - b`: it satisfies the subsolution
+inequality with equality (it is the value of the "draw everything" strategy), so it
+recovers the lower bound `r - b ≤ e(r,b)` through the dual comparison principle. -/
+theorem sub_isSubsolution : IsSubsolution (fun r b => (r : ℝ) - b) where
+  zero_left b := by simp
+  base r := by simp
+  ss r b := by
+    have hN : ((r : ℝ) + b + 2) ≠ 0 := by positivity
+    apply le_of_eq
+    push_cast
+    field_simp
+    ring
+
 /-- The real-`√` quadratic barrier (blueprint, "The barrier"): a width-`c√r` layer
 with normalisation `K`, threshold constant `c`, glued to `0` above the strip and to
 the deterministic value `(r-b) + (c²/K)√r` below the diagonal. -/
