@@ -767,3 +767,88 @@ theorem question (r b : ℕ) (hb : (b : ℝ) > r + 4 * Real.sqrt r) : e r b = 0 
   have hge : (0 : ℝ) ≤ (e r b : ℝ) := by exact_mod_cast zero_le_e r b
   have : (e r b : ℝ) = 0 := le_antisymm (hfar ▸ hle) hge
   exact_mod_cast this
+
+/-! ## Below-threshold positivity
+
+We show `e(r,b) > 0` for `b < r + k√r`, reducing it to a diagonal lower bound
+`e(r,r) ≥ k√r` via a `1`-Lipschitz-in-`b` argument. -/
+
+/-- Simultaneous `1`-Lipschitz bounds: one extra black card lowers the equity by at
+most `1`, and one extra red card raises it by at most `1`. Proved together by strong
+induction on `r + b`; each level uses only the previous one. -/
+theorem e_lipschitz : ∀ n r b : ℕ, r + b = n →
+    e r b ≤ e r (b + 1) + 1 ∧ e (r + 1) b ≤ e r b + 1 := by
+  intro n
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    intro r b hrb
+    refine ⟨?_, ?_⟩
+    · -- (L_b): e r b ≤ e r (b+1) + 1
+      cases r with
+      | zero => simp [e]
+      | succ r =>
+        obtain ⟨hLb, hLr⟩ := ih (r + b) (by omega) r b rfl
+        have star : e (r + 1) b ≤ e r (b + 1) + 2 := by linarith
+        rw [e_succ_succ]
+        have hN : ((r : ℚ) + b + 2) ≠ 0 := by positivity
+        have hkey : e (r + 1) b - 1 ≤ ((r : ℚ) + 1) / (r + b + 2) * (e r (b + 1) + 1)
+              + ((b : ℚ) + 1) / (r + b + 2) * (e (r + 1) b - 1) := by
+          have heq : ((r : ℚ) + 1) / (r + b + 2) * (e r (b + 1) + 1)
+                + ((b : ℚ) + 1) / (r + b + 2) * (e (r + 1) b - 1) - (e (r + 1) b - 1)
+              = ((r : ℚ) + 1) / (r + b + 2) * (e r (b + 1) - e (r + 1) b + 2) := by
+            field_simp; ring
+          nlinarith [heq, mul_nonneg (show (0 : ℚ) ≤ ((r : ℚ) + 1) / (r + b + 2) by positivity)
+            (show (0 : ℚ) ≤ e r (b + 1) - e (r + 1) b + 2 by linarith)]
+        linarith [(@le_max_of_le_right ℚ _ _ (0 : ℚ) _ hkey)]
+    · -- (L_r): e (r+1) b ≤ e r b + 1
+      cases b with
+      | zero => simpa [e] using sub_le_e r 0
+      | succ b =>
+        obtain ⟨hLb, hLr⟩ := ih (r + b) (by omega) r b rfl
+        have star : e (r + 1) b ≤ e r (b + 1) + 2 := by linarith
+        rw [e_succ_succ]
+        apply max_le
+        · linarith [zero_le_e r (b + 1)]
+        · have hN : ((r : ℚ) + b + 2) ≠ 0 := by positivity
+          have heq : ((r : ℚ) + 1) / (r + b + 2) * (e r (b + 1) + 1)
+                + ((b : ℚ) + 1) / (r + b + 2) * (e (r + 1) b - 1) - (e r (b + 1) + 1)
+              = -(((b : ℚ) + 1) / (r + b + 2) * (e r (b + 1) + 2 - e (r + 1) b)) := by
+            field_simp; ring
+          nlinarith [heq, mul_nonneg (show (0 : ℚ) ≤ ((b : ℚ) + 1) / (r + b + 2) by positivity)
+            (show (0 : ℚ) ≤ e r (b + 1) + 2 - e (r + 1) b by linarith)]
+
+/-- Black-Lipschitz bound in convenient form: `e(r,b+1) ≥ e(r,b) - 1`. -/
+theorem e_succ_ge (r b : ℕ) : e r b - 1 ≤ e r (b + 1) := by
+  linarith [(e_lipschitz (r + b) r b rfl).1]
+
+/-- Iterating: below the diagonal, `e` drops by at most the number of extra black
+cards: `e(r, r+j) ≥ e(r,r) - j`. -/
+theorem e_diag_lower (r j : ℕ) : e r r - (j : ℚ) ≤ e r (r + j) := by
+  induction j with
+  | zero => simp
+  | succ j ih =>
+    have step : e r (r + j) - 1 ≤ e r (r + j + 1) := e_succ_ge r (r + j)
+    have hbridge : e r (r + (j + 1)) = e r (r + j + 1) := rfl
+    push_cast
+    linarith [ih, step, hbridge]
+
+/-- Reduction (real form): a diagonal lower bound `e(r,r) ≥ L` gives `e(r,b) > 0`
+for `b ≥ r` with `b < r + L`. -/
+theorem e_pos_of_diag_lower {r b : ℕ} {L : ℝ} (hb : r ≤ b)
+    (hL : L ≤ (e r r : ℝ)) (hlt : (b : ℝ) < r + L) : 0 < e r b := by
+  obtain ⟨j, rfl⟩ := Nat.exists_eq_add_of_le hb
+  have hd : (e r r : ℝ) - (j : ℝ) ≤ (e r (r + j) : ℝ) := by exact_mod_cast e_diag_lower r j
+  push_cast at hlt
+  have hpos : (0 : ℝ) < (e r (r + j) : ℝ) := by linarith
+  exact_mod_cast hpos
+
+/-- Conditional main result: any diagonal lower bound of the shape `e(r,r) ≥ k√r`
+yields strict positivity of `e` everywhere below the matching threshold
+`b < r + k√r` (including the trivial bulk region `b < r`). -/
+theorem e_pos_below_threshold_of_diag {k : ℝ} {r b : ℕ}
+    (hdiag : k * Real.sqrt r ≤ (e r r : ℝ))
+    (hb : (b : ℝ) < r + k * Real.sqrt r) : 0 < e r b := by
+  rcases Nat.lt_or_ge b r with hlt | hle
+  · have hbr : (b : ℚ) < r := by exact_mod_cast hlt
+    linarith [sub_le_e r b]
+  · exact e_pos_of_diag_lower hle hdiag hb
