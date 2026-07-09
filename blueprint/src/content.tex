@@ -415,9 +415,102 @@ $b=r+j$; Lemma~\ref{lem:diag_iter} and the hypothesis give
 $e(r,b)\ge e(r,r)-j\ge k\sqrt r-(b-r)>0$.
 \end{proof}
 
-\paragraph{The remaining gate.}
-The only missing ingredient is the diagonal lower bound $e(r,r)\ge k\sqrt r$ (for
-some fixed $k>0$). This is the genuine $\sqrt r$-diffusion fact; its natural proof
-goes through the ballot/reflection estimate for the expected value of an explicit
-stopping strategy, and is left as a separate development. Everything else in this
-section is elementary and \texttt{sorry}-free.
+It therefore remains to prove the diagonal lower bound $e(r,r)\ge k\sqrt r$. This is
+the genuine $\sqrt r$-diffusion fact. Rather than the ballot/reflection route (which
+Mathlib does not support), we obtain it by a \emph{reflection-free} argument: we
+write down the value of one explicit strategy in closed form and verify it against
+the recursion by binomial algebra.
+
+\section{The diagonal $\sqrt r$ lower bound (reflection-free)}
+
+Consider the strategy ``keep drawing until the number of reds drawn exceeds the
+number of blacks drawn by $L$, otherwise draw to the end''. Started from the
+diagonal the surplus equals $b-r$, so this strategy is a function of the state
+$(r,b)$, and its value has the closed form
+\[
+  W_L(r,b) = (r-b) + L\cdot P_L(r,b),\qquad
+  P_L(r,b) = \binom{r+b}{\,b-L}\big/\binom{r+b}{\,b},
+\]
+where $P_L(r,b)$ is the probability the surplus ever reaches $L$ (and $P_L=0$ when
+$b<L$).
+
+\begin{definition}[Reach probability]\label{def:PL}
+\lean{PL}\leanok
+$P_L(r,b)=\binom{r+b}{b-L}/\binom{r+b}{b}$ for $b\ge L$, and $0$ otherwise.
+\end{definition}
+
+\begin{lemma}[$P_L$ is a martingale]\label{lem:PL_mart}
+\lean{PL_mart}\leanok
+\uses{def:PL}
+For $r,b\ge1$, $P_L(r,b)=\tfrac{r}{N}P_L(r-1,b)+\tfrac{b}{N}P_L(r,b-1)$, $N=r+b$.
+\end{lemma}
+\begin{proof}\leanok
+Pure binomial algebra: Pascal's rule
+$\binom{r+b}{b-L}=\binom{r+b-1}{b-L}+\binom{r+b-1}{b-1-L}$ together with the
+multiplicative identities $r\binom{r+b}{b}=(r+b)\binom{r+b-1}{b}$ and
+$b\binom{r+b}{b}=(r+b)\binom{r+b-1}{b-1}$. No reflection principle is used.
+\end{proof}
+
+\begin{lemma}[Strategy value satisfies the recursion]\label{lem:wL_mart}
+\lean{wL_mart}\leanok
+\uses{def:PL, lem:PL_mart}
+$W_L(r,b)=\tfrac{r}{N}\big(W_L(r-1,b)+1\big)+\tfrac{b}{N}\big(W_L(r,b-1)-1\big)$ for
+$r,b\ge1$; and $W_L(r,r+L)=0$.
+\end{lemma}
+\begin{proof}\leanok
+The $(r-b)$ part satisfies the recursion with equality; the $L\,P_L$ part is
+Lemma~\ref{lem:PL_mart}. The boundary value uses $\binom{r+b}{b-L}=\binom{r+b}{b}$
+at $b=r+L$ (choose-symmetry).
+\end{proof}
+
+\begin{proposition}[Domination]\label{prop:wL_le_e}
+\lean{wL_le_e}\leanok
+\uses{lem:wL_mart, lem:zero_le_e, lem:sub_le_e}
+$W_L(r,b)\le e(r,b)$ for all $r,b$ with $b\le r+L$.
+\end{proposition}
+\begin{proof}\leanok
+Strong induction on $r+b$. At surplus exactly $L$, $W_L=0\le e$; in the continue
+region $W_L$ equals its continue value (Lemma~\ref{lem:wL_mart}), which by the
+induction hypothesis and monotone coefficients is $\le$ that of $e$, hence
+$\le\max(0,\cdot)=e$.
+\end{proof}
+
+\begin{lemma}[Diagonal value]\label{lem:e_diag_ge}
+\lean{e_diag_ge}\leanok
+\uses{prop:wL_le_e}
+For $L\le n$, $e(n,n)\ge L\binom{2n}{n-L}/\binom{2n}{n}$.
+\end{lemma}
+\begin{proof}\leanok Take $b=n\le n+L$ in Proposition~\ref{prop:wL_le_e}. \end{proof}
+
+\begin{lemma}[Binomial ratio bound]\label{lem:ratio_lb}
+\lean{ratio_lb}\leanok
+For $L\le n$, $\binom{2n}{n-L}/\binom{2n}{n}\ge 1-L^2/n$.
+\end{lemma}
+\begin{proof}\leanok
+Induction on $L$; the step reduces to $2L^3+3L^2+3L+1\ge0$.
+\end{proof}
+
+\begin{theorem}[Diagonal $\sqrt r$ bound]\label{thm:e_diag_sqrt}
+\lean{e_diag_sqrt}\leanok
+\uses{lem:e_diag_ge, lem:ratio_lb}
+$e(r,r)\ge\tfrac18\sqrt r$ for all $r$.
+\end{theorem}
+\begin{proof}\leanok
+Combining Lemmas~\ref{lem:e_diag_ge} and~\ref{lem:ratio_lb} gives
+$e(n,n)\ge L(1-L^2/n)$; choosing $L=\lfloor\sqrt n\rfloor/2$ yields
+$e(n,n)^2\ge n/64$ for $n\ge4$ (small cases by direct bound), i.e.
+$e(n,n)\ge\sqrt n/8$.
+\end{proof}
+
+\begin{theorem}[Below-threshold positivity]\label{thm:e_pos_below}
+\lean{e_pos_below}\leanok
+\uses{thm:cond_positivity, thm:e_diag_sqrt}
+$e(r,b)>0$ whenever $b<r+\tfrac18\sqrt r$.
+\end{theorem}
+\begin{proof}\leanok
+Theorem~\ref{thm:e_diag_sqrt} supplies the hypothesis of
+Theorem~\ref{thm:cond_positivity} with $k=\tfrac18$.
+\end{proof}
+
+Together with Theorem~\ref{thm:question} this is a two-sided result: $e(r,b)=0$ for
+$b>r+4\sqrt r$ and $e(r,b)>0$ for $b<r+\tfrac18\sqrt r$.
