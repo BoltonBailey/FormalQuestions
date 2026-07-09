@@ -16,6 +16,8 @@ multiplicative binomial identities) — no reflection principle is needed — so
 `C(2n,n-L)/C(2n,n) ≥ 1 - L²/n` and the choice `L ≈ √n/2` yield the `√r` growth.
 -/
 
+
+
 /-- `b · C(r+b, b) = (r+b) · C(r+b-1, b-1)`. -/
 theorem HB (r b : ℕ) (hb : 1 ≤ b) :
     b * Nat.choose (r+b) b = (r+b) * Nat.choose (r+b-1) (b-1) := by
