@@ -179,6 +179,71 @@ theorem e_le_of_supersolution {φ : ℕ → ℕ → ℝ} (hφ : IsSupersolution 
   intro r b
   exact H (r + b) r b rfl
 
+/-- A subsolution: the dual of `IsSupersolution`, used to obtain *lower* bounds on
+the equity `e`. No nonnegativity is imposed; the boundary data is bounded *above*
+(`ψ(0,b) ≤ 0 = e(0,b)` and `ψ(r,0) ≤ r = e(r,0)`) and the supersolution inequality
+is reversed. Because `e = max 0 (…)`, no `max` is needed here: it suffices that `ψ`
+lies below its own "continue value". -/
+structure IsSubsolution (ψ : ℕ → ℕ → ℝ) : Prop where
+  zero_left : ∀ b, ψ 0 b ≤ 0
+  base : ∀ r : ℕ, ψ r 0 ≤ r
+  ss : ∀ r b : ℕ,
+    ψ (r + 1) (b + 1) ≤
+      (r + 1) / (r + b + 2) * (ψ r (b + 1) + 1)
+        + (b + 1) / (r + b + 2) * (ψ (r + 1) b - 1)
+
+/-- Dual comparison principle: any subsolution `ψ` is dominated by the equity `e`
+(compared after casting `e` into `ℝ`). Strong induction on `r + b`, mirroring
+`e_le_of_supersolution`. -/
+theorem e_ge_of_subsolution {ψ : ℕ → ℕ → ℝ} (hψ : IsSubsolution ψ) :
+    ∀ r b, ψ r b ≤ (e r b : ℝ) := by
+  have H : ∀ n r b, r + b = n → ψ r b ≤ (e r b : ℝ) := by
+    intro n
+    induction n using Nat.strong_induction_on with
+    | _ n ih =>
+      intro r b hrb
+      cases r with
+      | zero =>
+        have he : (e 0 b : ℝ) = 0 := by simp [e]
+        rw [he]; exact hψ.zero_left b
+      | succ r =>
+        cases b with
+        | zero =>
+          have he : (e (r + 1) 0 : ℝ) = ((r + 1 : ℕ) : ℝ) := by simp [e]
+          rw [he]; exact_mod_cast hψ.base (r + 1)
+        | succ b =>
+          rw [e_succ_succ, Rat.cast_max, Rat.cast_zero]
+          push_cast
+          refine le_trans ?_ (le_max_right _ _)
+          have h1 : ψ r (b + 1) ≤ (e r (b + 1) : ℝ) :=
+            ih (r + (b + 1)) (by omega) r (b + 1) rfl
+          have h2 : ψ (r + 1) b ≤ (e (r + 1) b : ℝ) :=
+            ih ((r + 1) + b) (by omega) (r + 1) b rfl
+          have hc1 : (0 : ℝ) ≤ (r + 1) / (r + b + 2) := by positivity
+          have hc2 : (0 : ℝ) ≤ (b + 1) / (r + b + 2) := by positivity
+          have f1 : (r + 1) / (r + b + 2) * (ψ r (b + 1) + 1)
+              ≤ (r + 1) / (r + b + 2) * ((e r (b + 1) : ℝ) + 1) :=
+            mul_le_mul_of_nonneg_left (by linarith) hc1
+          have f2 : (b + 1) / (r + b + 2) * (ψ (r + 1) b - 1)
+              ≤ (b + 1) / (r + b + 2) * ((e (r + 1) b : ℝ) - 1) :=
+            mul_le_mul_of_nonneg_left (by linarith) hc2
+          linarith [hψ.ss r b]
+  intro r b
+  exact H (r + b) r b rfl
+
+/-- The linear subsolution `ψ(r,b) = r - b`: it satisfies the subsolution
+inequality with equality (it is the value of the "draw everything" strategy), so it
+recovers the lower bound `r - b ≤ e(r,b)` through the dual comparison principle. -/
+theorem sub_isSubsolution : IsSubsolution (fun r b => (r : ℝ) - b) where
+  zero_left b := by simp
+  base r := by simp
+  ss r b := by
+    have hN : ((r : ℝ) + b + 2) ≠ 0 := by positivity
+    apply le_of_eq
+    push_cast
+    field_simp
+    ring
+
 /-- The real-`√` quadratic barrier (blueprint, "The barrier"): a width-`c√r` layer
 with normalisation `K`, threshold constant `c`, glued to `0` above the strip and to
 the deterministic value `(r-b) + (c²/K)√r` below the diagonal. -/
@@ -702,3 +767,88 @@ theorem question (r b : ℕ) (hb : (b : ℝ) > r + 4 * Real.sqrt r) : e r b = 0 
   have hge : (0 : ℝ) ≤ (e r b : ℝ) := by exact_mod_cast zero_le_e r b
   have : (e r b : ℝ) = 0 := le_antisymm (hfar ▸ hle) hge
   exact_mod_cast this
+
+/-! ## Below-threshold positivity
+
+We show `e(r,b) > 0` for `b < r + k√r`, reducing it to a diagonal lower bound
+`e(r,r) ≥ k√r` via a `1`-Lipschitz-in-`b` argument. -/
+
+/-- Simultaneous `1`-Lipschitz bounds: one extra black card lowers the equity by at
+most `1`, and one extra red card raises it by at most `1`. Proved together by strong
+induction on `r + b`; each level uses only the previous one. -/
+theorem e_lipschitz : ∀ n r b : ℕ, r + b = n →
+    e r b ≤ e r (b + 1) + 1 ∧ e (r + 1) b ≤ e r b + 1 := by
+  intro n
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    intro r b hrb
+    refine ⟨?_, ?_⟩
+    · -- (L_b): e r b ≤ e r (b+1) + 1
+      cases r with
+      | zero => simp [e]
+      | succ r =>
+        obtain ⟨hLb, hLr⟩ := ih (r + b) (by omega) r b rfl
+        have star : e (r + 1) b ≤ e r (b + 1) + 2 := by linarith
+        rw [e_succ_succ]
+        have hN : ((r : ℚ) + b + 2) ≠ 0 := by positivity
+        have hkey : e (r + 1) b - 1 ≤ ((r : ℚ) + 1) / (r + b + 2) * (e r (b + 1) + 1)
+              + ((b : ℚ) + 1) / (r + b + 2) * (e (r + 1) b - 1) := by
+          have heq : ((r : ℚ) + 1) / (r + b + 2) * (e r (b + 1) + 1)
+                + ((b : ℚ) + 1) / (r + b + 2) * (e (r + 1) b - 1) - (e (r + 1) b - 1)
+              = ((r : ℚ) + 1) / (r + b + 2) * (e r (b + 1) - e (r + 1) b + 2) := by
+            field_simp; ring
+          nlinarith [heq, mul_nonneg (show (0 : ℚ) ≤ ((r : ℚ) + 1) / (r + b + 2) by positivity)
+            (show (0 : ℚ) ≤ e r (b + 1) - e (r + 1) b + 2 by linarith)]
+        linarith [(@le_max_of_le_right ℚ _ _ (0 : ℚ) _ hkey)]
+    · -- (L_r): e (r+1) b ≤ e r b + 1
+      cases b with
+      | zero => simpa [e] using sub_le_e r 0
+      | succ b =>
+        obtain ⟨hLb, hLr⟩ := ih (r + b) (by omega) r b rfl
+        have star : e (r + 1) b ≤ e r (b + 1) + 2 := by linarith
+        rw [e_succ_succ]
+        apply max_le
+        · linarith [zero_le_e r (b + 1)]
+        · have hN : ((r : ℚ) + b + 2) ≠ 0 := by positivity
+          have heq : ((r : ℚ) + 1) / (r + b + 2) * (e r (b + 1) + 1)
+                + ((b : ℚ) + 1) / (r + b + 2) * (e (r + 1) b - 1) - (e r (b + 1) + 1)
+              = -(((b : ℚ) + 1) / (r + b + 2) * (e r (b + 1) + 2 - e (r + 1) b)) := by
+            field_simp; ring
+          nlinarith [heq, mul_nonneg (show (0 : ℚ) ≤ ((b : ℚ) + 1) / (r + b + 2) by positivity)
+            (show (0 : ℚ) ≤ e r (b + 1) + 2 - e (r + 1) b by linarith)]
+
+/-- Black-Lipschitz bound in convenient form: `e(r,b+1) ≥ e(r,b) - 1`. -/
+theorem e_succ_ge (r b : ℕ) : e r b - 1 ≤ e r (b + 1) := by
+  linarith [(e_lipschitz (r + b) r b rfl).1]
+
+/-- Iterating: below the diagonal, `e` drops by at most the number of extra black
+cards: `e(r, r+j) ≥ e(r,r) - j`. -/
+theorem e_diag_lower (r j : ℕ) : e r r - (j : ℚ) ≤ e r (r + j) := by
+  induction j with
+  | zero => simp
+  | succ j ih =>
+    have step : e r (r + j) - 1 ≤ e r (r + j + 1) := e_succ_ge r (r + j)
+    have hbridge : e r (r + (j + 1)) = e r (r + j + 1) := rfl
+    push_cast
+    linarith [ih, step, hbridge]
+
+/-- Reduction (real form): a diagonal lower bound `e(r,r) ≥ L` gives `e(r,b) > 0`
+for `b ≥ r` with `b < r + L`. -/
+theorem e_pos_of_diag_lower {r b : ℕ} {L : ℝ} (hb : r ≤ b)
+    (hL : L ≤ (e r r : ℝ)) (hlt : (b : ℝ) < r + L) : 0 < e r b := by
+  obtain ⟨j, rfl⟩ := Nat.exists_eq_add_of_le hb
+  have hd : (e r r : ℝ) - (j : ℝ) ≤ (e r (r + j) : ℝ) := by exact_mod_cast e_diag_lower r j
+  push_cast at hlt
+  have hpos : (0 : ℝ) < (e r (r + j) : ℝ) := by linarith
+  exact_mod_cast hpos
+
+/-- Conditional main result: any diagonal lower bound of the shape `e(r,r) ≥ k√r`
+yields strict positivity of `e` everywhere below the matching threshold
+`b < r + k√r` (including the trivial bulk region `b < r`). -/
+theorem e_pos_below_threshold_of_diag {k : ℝ} {r b : ℕ}
+    (hdiag : k * Real.sqrt r ≤ (e r r : ℝ))
+    (hb : (b : ℝ) < r + k * Real.sqrt r) : 0 < e r b := by
+  rcases Nat.lt_or_ge b r with hlt | hle
+  · have hbr : (b : ℚ) < r := by exact_mod_cast hlt
+    linarith [sub_le_e r b]
+  · exact e_pos_of_diag_lower hle hdiag hb

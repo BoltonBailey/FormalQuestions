@@ -135,6 +135,66 @@ maximum is $\le\varphi(r,b)$.
 Thus, to prove $e(r,b)=0$ on a region it suffices to exhibit a supersolution
 $\varphi$ that \emph{vanishes} there: then $0\le e(r,b)\le\varphi(r,b)=0$.
 
+\section{Lower bounds via subsolutions}
+
+Dual to the comparison principle is a lower-bound principle. A
+\emph{subsolution} reverses the supersolution inequalities and drops the
+nonnegativity requirement; where a supersolution dominates $e$ from above, a
+subsolution is dominated by $e$ from below.
+
+\begin{definition}[Subsolution]\label{def:subsolution}
+\lean{IsSubsolution}\leanok
+\uses{def:e}
+A real-valued function $\psi:\mathbb N\times\mathbb N\to\mathbb R$ is a
+\emph{subsolution} if
+\begin{enumerate}
+  \item $\psi(0,b)\le 0$ for all $b$;
+  \item $\psi(r,0)\le r$ for all $r$;
+  \item for all $r,b\ge1$, writing $N=r+b$,
+  \[
+    \psi(r,b)\ \le\
+    \tfrac{r}{N}\big(\psi(r-1,b)+1\big)+\tfrac{b}{N}\big(\psi(r,b-1)-1\big).
+    \tag{SS$'$}
+  \]
+\end{enumerate}
+Because $e=\max(0,\cdot)$, no truncation is needed in (SS$'$): it suffices that
+$\psi$ lie below its own ``continue value''.
+\end{definition}
+
+\begin{proposition}[Lower comparison]\label{prop:comparison_lower}
+\lean{e_ge_of_subsolution}\leanok
+\uses{lem:recursion, def:subsolution}
+If $\psi$ is a subsolution, then $\psi(r,b)\le e(r,b)$ for all $r,b$ (the rational
+$e(r,b)$ being cast into $\mathbb R$).
+\end{proposition}
+\begin{proof}\leanok
+Strong induction on $r+b$, mirroring Proposition~\ref{prop:comparison}.
+If $r=0$ then $\psi(0,b)\le 0=e(0,b)$ by (1). If $b=0$ then
+$\psi(r,0)\le r=e(r,0)$ by (2). For $r,b\ge1$, the coefficients $r/N,\ b/N$ are
+nonnegative, so by the induction hypothesis the continue value of $\psi$ is at most
+that of $e$; with (SS$'$) and $e(r,b)=\max(0,\cdot)\ge(\cdot)$ this gives
+$\psi(r,b)\le e(r,b)$.
+\end{proof}
+
+\begin{lemma}[Linear subsolution]\label{lem:sub_subsolution}
+\lean{sub_isSubsolution}\leanok
+\uses{def:subsolution}
+The function $\psi(r,b)=r-b$ is a subsolution: it satisfies (SS$'$) with equality
+(it is the value of the ``draw everything'' strategy).
+\end{lemma}
+\begin{proof}\leanok
+Conditions (1),(2) are immediate. For (SS$'$), the equality
+$r\big((r-b)-(r-1-b)\big)+b\big((r-b)-(r-b+1)\big)=r-b$ makes the continue value of
+$\psi$ equal to $\psi(r,b)$.
+\end{proof}
+
+Chaining Lemma~\ref{lem:sub_subsolution} through
+Proposition~\ref{prop:comparison_lower} recovers the lower bound
+$r-b\le e(r,b)$ of Lemma~\ref{lem:sub_le_e}, now as an instance of the
+subsolution principle. Combined with the upper bound of
+Theorem~\ref{thm:question}, this gives a two-sided picture: $e$ vanishes for
+$b>r+4\sqrt r$ and is bounded below by $r-b$ throughout.
+
 \section{The barrier and the general supersolution theorem}
 
 \begin{definition}[Quadratic barrier $\varphi_{K,c}$]\label{def:phiBar}
@@ -310,3 +370,147 @@ Chaining Theorem~\ref{thm:super_6_4} $\to$ Proposition~\ref{prop:comparison} and
 evaluating $\varphi_{6,4}$ in the far field gives Theorem~\ref{thm:question}: for
 $b>r+4\sqrt r$ we have $0\le e(r,b)\le\varphi_{6,4}(r,b)=0$. The whole chain compiles
 with no \texttt{sorry}.
+
+\section{Below-threshold positivity (complementary lower bound)}
+
+We now show that below a matching threshold $b<r+k\sqrt r$ the equity is
+\emph{strictly positive}. The two-dimensional positivity is reduced to a purely
+one-dimensional statement (a lower bound on the diagonal) by a Lipschitz argument;
+an elementary subsolution barrier is \emph{not} available for this direction
+(a subharmonic correction cannot also be a positive bump vanishing at both ends).
+
+\begin{lemma}[Bounded differences]\label{lem:lipschitz}
+\lean{e_lipschitz}\leanok
+\uses{lem:recursion, lem:sub_le_e, lem:zero_le_e}
+For all $r,b$, one has $e(r,b)\le e(r,b+1)+1$ and $e(r+1,b)\le e(r,b)+1$: one extra
+black card lowers the equity by at most $1$, and one extra red card raises it by at
+most $1$.
+\end{lemma}
+\begin{proof}\leanok
+Simultaneous strong induction on $r+b$. At $(r,b)$ the two claims each reduce, via
+the recursion (Lemma~\ref{lem:recursion}) and clearing the denominator $N$, to the
+two claims at $(r-1,b)$ / $(r,b-1)$ of the previous level; the base cases use
+$e(r,0)=r$ and $r-1\le e(r,1)$ (Lemma~\ref{lem:sub_le_e}).
+\end{proof}
+
+\begin{lemma}[Diagonal iteration]\label{lem:diag_iter}
+\lean{e_diag_lower}\leanok
+\uses{lem:lipschitz}
+For all $r$ and $j$, $e(r,r+j)\ge e(r,r)-j$.
+\end{lemma}
+\begin{proof}\leanok
+Iterate the black-Lipschitz bound $e(r,b+1)\ge e(r,b)-1$ (Lemma~\ref{lem:lipschitz})
+$j$ times starting from the diagonal.
+\end{proof}
+
+\begin{theorem}[Conditional below-threshold positivity]\label{thm:cond_positivity}
+\lean{e_pos_below_threshold_of_diag}\leanok
+\uses{lem:diag_iter, lem:sub_le_e}
+Fix $k>0$ and suppose the diagonal lower bound $e(r,r)\ge k\sqrt r$ holds. Then
+$e(r,b)>0$ for every $b$ with $b<r+k\sqrt r$.
+\end{theorem}
+\begin{proof}\leanok
+If $b<r$ then $e(r,b)\ge r-b>0$ by Lemma~\ref{lem:sub_le_e}. If $b\ge r$, write
+$b=r+j$; Lemma~\ref{lem:diag_iter} and the hypothesis give
+$e(r,b)\ge e(r,r)-j\ge k\sqrt r-(b-r)>0$.
+\end{proof}
+
+It therefore remains to prove the diagonal lower bound $e(r,r)\ge k\sqrt r$. This is
+the genuine $\sqrt r$-diffusion fact. Rather than the ballot/reflection route (which
+Mathlib does not support), we obtain it by a \emph{reflection-free} argument: we
+write down the value of one explicit strategy in closed form and verify it against
+the recursion by binomial algebra.
+
+\section{The diagonal $\sqrt r$ lower bound (reflection-free)}
+
+Consider the strategy ``keep drawing until the number of reds drawn exceeds the
+number of blacks drawn by $L$, otherwise draw to the end''. Started from the
+diagonal the surplus equals $b-r$, so this strategy is a function of the state
+$(r,b)$, and its value has the closed form
+\[
+  W_L(r,b) = (r-b) + L\cdot P_L(r,b),\qquad
+  P_L(r,b) = \binom{r+b}{\,b-L}\big/\binom{r+b}{\,b},
+\]
+where $P_L(r,b)$ is the probability the surplus ever reaches $L$ (and $P_L=0$ when
+$b<L$).
+
+\begin{definition}[Reach probability]\label{def:PL}
+\lean{PL}\leanok
+$P_L(r,b)=\binom{r+b}{b-L}/\binom{r+b}{b}$ for $b\ge L$, and $0$ otherwise.
+\end{definition}
+
+\begin{lemma}[$P_L$ is a martingale]\label{lem:PL_mart}
+\lean{PL_mart}\leanok
+\uses{def:PL}
+For $r,b\ge1$, $P_L(r,b)=\tfrac{r}{N}P_L(r-1,b)+\tfrac{b}{N}P_L(r,b-1)$, $N=r+b$.
+\end{lemma}
+\begin{proof}\leanok
+Pure binomial algebra: Pascal's rule
+$\binom{r+b}{b-L}=\binom{r+b-1}{b-L}+\binom{r+b-1}{b-1-L}$ together with the
+multiplicative identities $r\binom{r+b}{b}=(r+b)\binom{r+b-1}{b}$ and
+$b\binom{r+b}{b}=(r+b)\binom{r+b-1}{b-1}$. No reflection principle is used.
+\end{proof}
+
+\begin{lemma}[Strategy value satisfies the recursion]\label{lem:wL_mart}
+\lean{wL_mart}\leanok
+\uses{def:PL, lem:PL_mart}
+$W_L(r,b)=\tfrac{r}{N}\big(W_L(r-1,b)+1\big)+\tfrac{b}{N}\big(W_L(r,b-1)-1\big)$ for
+$r,b\ge1$; and $W_L(r,r+L)=0$.
+\end{lemma}
+\begin{proof}\leanok
+The $(r-b)$ part satisfies the recursion with equality; the $L\,P_L$ part is
+Lemma~\ref{lem:PL_mart}. The boundary value uses $\binom{r+b}{b-L}=\binom{r+b}{b}$
+at $b=r+L$ (choose-symmetry).
+\end{proof}
+
+\begin{proposition}[Domination]\label{prop:wL_le_e}
+\lean{wL_le_e}\leanok
+\uses{lem:wL_mart, lem:zero_le_e, lem:sub_le_e}
+$W_L(r,b)\le e(r,b)$ for all $r,b$ with $b\le r+L$.
+\end{proposition}
+\begin{proof}\leanok
+Strong induction on $r+b$. At surplus exactly $L$, $W_L=0\le e$; in the continue
+region $W_L$ equals its continue value (Lemma~\ref{lem:wL_mart}), which by the
+induction hypothesis and monotone coefficients is $\le$ that of $e$, hence
+$\le\max(0,\cdot)=e$.
+\end{proof}
+
+\begin{lemma}[Diagonal value]\label{lem:e_diag_ge}
+\lean{e_diag_ge}\leanok
+\uses{prop:wL_le_e}
+For $L\le n$, $e(n,n)\ge L\binom{2n}{n-L}/\binom{2n}{n}$.
+\end{lemma}
+\begin{proof}\leanok Take $b=n\le n+L$ in Proposition~\ref{prop:wL_le_e}. \end{proof}
+
+\begin{lemma}[Binomial ratio bound]\label{lem:ratio_lb}
+\lean{ratio_lb}\leanok
+For $L\le n$, $\binom{2n}{n-L}/\binom{2n}{n}\ge 1-L^2/n$.
+\end{lemma}
+\begin{proof}\leanok
+Induction on $L$; the step reduces to $2L^3+3L^2+3L+1\ge0$.
+\end{proof}
+
+\begin{theorem}[Diagonal $\sqrt r$ bound]\label{thm:e_diag_sqrt}
+\lean{e_diag_sqrt}\leanok
+\uses{lem:e_diag_ge, lem:ratio_lb}
+$e(r,r)\ge\tfrac18\sqrt r$ for all $r$.
+\end{theorem}
+\begin{proof}\leanok
+Combining Lemmas~\ref{lem:e_diag_ge} and~\ref{lem:ratio_lb} gives
+$e(n,n)\ge L(1-L^2/n)$; choosing $L=\lfloor\sqrt n\rfloor/2$ yields
+$e(n,n)^2\ge n/64$ for $n\ge4$ (small cases by direct bound), i.e.
+$e(n,n)\ge\sqrt n/8$.
+\end{proof}
+
+\begin{theorem}[Below-threshold positivity]\label{thm:e_pos_below}
+\lean{e_pos_below}\leanok
+\uses{thm:cond_positivity, thm:e_diag_sqrt}
+$e(r,b)>0$ whenever $b<r+\tfrac18\sqrt r$.
+\end{theorem}
+\begin{proof}\leanok
+Theorem~\ref{thm:e_diag_sqrt} supplies the hypothesis of
+Theorem~\ref{thm:cond_positivity} with $k=\tfrac18$.
+\end{proof}
+
+Together with Theorem~\ref{thm:question} this is a two-sided result: $e(r,b)=0$ for
+$b>r+4\sqrt r$ and $e(r,b)>0$ for $b<r+\tfrac18\sqrt r$.

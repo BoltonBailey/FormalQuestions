@@ -2,5 +2,6 @@ import FormalQuestions.BraessWithTolls
 import FormalQuestions.Minesweeper
 import FormalQuestions.PolyominoCover
 import FormalQuestions.ProblemFourteen
+import FormalQuestions.ProblemFourteenDiagonal
 import FormalQuestions.StrategicSettings.Basic
 import FormalQuestions.TournamentGame
